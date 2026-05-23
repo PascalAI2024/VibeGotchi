@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Vibe Gotchi",
+  "description": "A virtual pet that grows and thrives based on your GitHub commit activity. Ship code to keep it alive!",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,31 @@
+export interface GitHubUser {
+  login: string;
+  avatar_url: string;
+  html_url: string;
+  name: string;
+  public_repos: number;
+}
+
+export interface GitHubEvent {
+  type: string;
+  created_at: string;
+  repo: {
+    name: string;
+  };
+  payload: Record<string, unknown>;
+}
+
+export interface PetState {
+  stage: 'Egg' | 'Baby' | 'Teen' | 'Adult' | 'Elder';
+  health: number; // 0-100
+  mood: 'Ecstatic' | 'Happy' | 'Neutral' | 'Sad' | 'Dead';
+  posture: 'Stand' | 'Sit' | 'LayDown';
+  level: number;
+  xp: number;
+  xpToNextLevel: number;
+  daysSinceLastCommit: number;
+  commitStreak: number;
+  recentCommitsCount: number; // in last 90 days (from events)
+  topLanguage: string | null;
+  lastCommitMessage: string | null;
+}
