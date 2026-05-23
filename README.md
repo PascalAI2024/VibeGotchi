@@ -2,51 +2,85 @@
 
 ![VibeGotchi evolution banner](public/vibegotchi-banner.jpeg)
 
-A GitHub-powered virtual pet that evolves from your coding activity.
+**A GitHub-powered virtual pet that evolves from coding activity.**
 
-VibeGotchi turns GitHub activity into XP, health, mood, streaks, and pet evolution stages. Visitors can try a public username lookup without logging in, or use read-only GitHub OAuth on the Cloudflare deployment for a richer contribution-history view.
+[![Live on Cloudflare Pages](https://img.shields.io/badge/Live-Cloudflare%20Pages-f38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://vibegotchi.pages.dev)
+[![GitHub Pages](https://img.shields.io/badge/Demo-GitHub%20Pages-181717?style=for-the-badge&logo=github&logoColor=white)](https://pascalai2024.github.io/VibeGotchi/)
+[![Angular](https://img.shields.io/badge/Angular-21-dd0031?style=for-the-badge&logo=angular&logoColor=white)](https://angular.dev)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-Live deployments:
+VibeGotchi turns GitHub activity into XP, health, mood, streaks, achievement badges, tech badges, and evolution stages. It is built to be simple enough to understand in a minute, but polished enough for a competition demo.
 
-- Cloudflare Pages: https://vibegotchi.pages.dev
-- GitHub Pages: https://pascalai2024.github.io/VibeGotchi/
-- Source: https://github.com/PascalAI2024/VibeGotchi
+## Quick Links
 
-## Features
+| Resource | Link |
+| --- | --- |
+| Production app | https://vibegotchi.pages.dev |
+| Static demo | https://pascalai2024.github.io/VibeGotchi/ |
+| Docs index | [docs/README.md](docs/README.md) |
+| Architecture | [docs/architecture.md](docs/architecture.md) |
+| Scoring model | [docs/scoring.md](docs/scoring.md) |
+| Deployment | [docs/deployment.md](docs/deployment.md) |
+| Security | [docs/security.md](docs/security.md) |
 
-- Public GitHub username lookup with no login required
-- Read-only GitHub OAuth login on Cloudflare Pages
-- Contribution-graph scoring for authenticated users
-- Public-events fallback for unauthenticated lookups
-- Per-tech badges ranked by how many public owned repos use each language
-- Achievement badges for streaks, specialist lanes, polyglot activity, and evolution milestones
-- Transparent XP breakdown so users can see why the pet reached its level
-- Downloadable share card for demos and social proof
-- Pet personality readout based on health, activity, streaks, and tech depth
-- Evolution demo for Egg, Baby, Teen, Adult, and Elder stages
-- Animated SVG pet with mood, posture, health, XP, and streak display
-- Free hosting path for both Cloudflare Pages and GitHub Pages
+## Screenshots
 
-## How It Works
+| Home | Dashboard | Mobile |
+| --- | --- | --- |
+| ![Home screen](docs/assets/screenshots/home.png) | ![Pet dashboard](docs/assets/screenshots/dashboard.png) | ![Mobile view](docs/assets/screenshots/mobile.png) |
+
+## Why It Is Interesting
+
+Most GitHub activity demos stop at charts. VibeGotchi makes the activity legible and memorable:
+
+- A pet evolves through `Egg`, `Baby`, `Teen`, `Adult`, and `Elder`.
+- Read-only GitHub OAuth unlocks contribution-history scoring.
+- Public username lookup works without login.
+- Tech badges rank languages by how many public owned repos use each tech.
+- Achievement badges reward streaks, polyglot work, specialist lanes, and evolution milestones.
+- A transparent XP breakdown explains why a user reached their level.
+- A downloadable share card gives the demo a clean final artifact.
+
+## Product Flow
 
 ```mermaid
 flowchart LR
-  Visitor[Visitor] --> Landing[VibeGotchi Landing]
-  Landing --> Demo[Evolution Demo]
-  Landing --> PublicLookup[Public Username Lookup]
-  Landing --> GitHubLogin[Read-only GitHub Login]
+  Visitor[Visitor] --> Landing[Landing Page]
+  Landing --> Demo[Demo Profiles]
+  Landing --> Lookup[Public Lookup]
+  Landing --> Login[Read-only GitHub Login]
 
-  PublicLookup --> PublicEvents[GitHub REST public events]
-  GitHubLogin --> OAuth[Cloudflare Pages OAuth Functions]
-  OAuth --> GitHubOAuth[GitHub OAuth App]
-  GitHubLogin --> GraphQL[GitHub GraphQL contribution calendar]
-
-  PublicEvents --> Engine[Pet Engine]
-  GraphQL --> Engine
+  Lookup --> Events[Recent Public Events]
+  Login --> Contributions[Contribution Calendar]
+  Login --> Repos[Public Owned Repos]
+  Events --> Engine[Pet Engine]
+  Contributions --> Engine
+  Repos --> Engine
   Engine --> Dashboard[Pet Dashboard]
+  Dashboard --> Share[PNG Share Card]
 ```
 
-Authenticated login asks GitHub for `read:user` only. It does not request `repo`, write access, admin access, webhooks, organization access, or private repository contents. The app reads contribution counts and dates, not source code.
+## Feature Map
+
+| Feature | Public lookup | GitHub login |
+| --- | ---: | ---: |
+| User profile | Yes | Yes |
+| Recent public events | Yes | Fallback |
+| Contribution calendar | No | Yes |
+| Tech badges from public repos | Yes | Yes |
+| Achievements | Yes | Yes |
+| Share card | Yes | Yes |
+| Requires `repo` scope | No | No |
+
+## OAuth Scope
+
+VibeGotchi asks GitHub for:
+
+```text
+read:user
+```
+
+It does **not** ask for `repo`, write access, admin access, workflows, org admin, or private repository contents. Current scoring uses contribution counts, contribution dates, public events, and public repository language metadata.
 
 ## Local Development
 
@@ -60,9 +94,13 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open:
 
-Useful scripts:
+```text
+http://localhost:3000
+```
+
+Useful commands:
 
 ```bash
 npm run dev               # Angular dev server
@@ -73,75 +111,53 @@ npm run lint              # ESLint
 npm run typecheck:functions
 ```
 
-## Deployment
-
-Cloudflare Pages is the primary hosted app because it can run the OAuth callback securely. GitHub Pages is kept as a static public/demo deployment.
-
-Cloudflare Pages settings:
+## Repository Structure
 
 ```text
-Framework preset: None
-Build command: npm run build:pages
-Build output directory: dist/app/browser
-Root directory: /
-Node version: 22
+.
+├── docs/                         Documentation, diagrams, screenshots
+├── functions/                    Cloudflare Pages Functions for OAuth
+├── public/                       Public assets and runtime config
+├── scripts/                      Build helpers
+├── src/app/                      Angular app, dashboard, pet engine
+├── .github/                      GitHub Pages workflow and templates
+├── angular.json                  Angular build targets
+└── package.json                  Scripts and dependencies
 ```
 
-Required Cloudflare environment variables:
+## Deployment Summary
+
+Cloudflare Pages is the primary deployment because OAuth needs a server-side callback to protect the GitHub client secret.
 
 ```text
-GITHUB_CLIENT_ID=your_github_oauth_client_id
-GITHUB_CLIENT_SECRET=stored_as_cloudflare_secret
+Build command: npm run build:pages
+Build output:  dist/app/browser
+Node version:  22
+```
+
+Required Cloudflare variables:
+
+```text
+GITHUB_CLIENT_ID
+GITHUB_CLIENT_SECRET  # Cloudflare Secret
 NODE_VERSION=22
 ```
 
-GitHub OAuth app settings:
+GitHub Pages is static-only. It supports the demo and public lookup path, but cannot securely exchange OAuth codes.
 
-```text
-Homepage URL: https://vibegotchi.pages.dev/
-Authorization callback URL: https://vibegotchi.pages.dev/auth/callback
-OAuth scope requested by app: read:user
-```
+## Competition Demo Script
 
-`npm run build:pages` uses the Cloudflare root base path when Cloudflare sets `CF_PAGES`. GitHub Actions runs the same command without `CF_PAGES`, so GitHub Pages keeps the required `/VibeGotchi/` base path.
+1. Open https://vibegotchi.pages.dev.
+2. Point out the read-only OAuth note.
+3. Click an evolution demo card to show a full dashboard instantly.
+4. Highlight tech badges, achievements, and XP breakdown.
+5. Click `Share Card` to download the PNG summary.
+6. Optionally log in with GitHub to show real read-only contribution scoring.
 
-More detail:
+## Contributing
 
-- [Architecture](docs/architecture.md)
-- [Deployment Runbook](docs/deployment.md)
-- [Security Notes](docs/security.md)
-
-## Repository Layout
-
-```text
-src/app/                 Angular app components, services, and pet engine
-functions/api/auth/url.ts Cloudflare Pages Function that creates GitHub OAuth URLs
-functions/auth/callback.ts Cloudflare Pages Function that exchanges OAuth codes
-public/config.json       Runtime client config
-public/vibegotchi-banner.jpeg
-scripts/build-pages.mjs  Pages build selector for GitHub vs Cloudflare
-```
-
-## Tech Badges
-
-VibeGotchi counts the primary language on each non-fork public owned repository and turns those counts into badge levels:
-
-| Level | Tier | Repo count |
-| --- | --- | --- |
-| 1 | Bronze | 1-2 |
-| 2 | Silver | 3-4 |
-| 3 | Gold | 5-9 |
-| 4 | Platinum | 10-19 |
-| 5 | Legend | 20+ |
-
-The current implementation intentionally uses public repository language metadata only. That keeps OAuth read-only and avoids asking for `repo` access.
-
-## Competition Demo Hooks
-
-- Click any evolution demo card to show a complete pet profile instantly.
-- Use `Share Card` on the dashboard to download a PNG summary.
-- The dashboard shows the pet's readout, achievements, tech badges, and XP sources without requiring judges to inspect the code.
+See [CONTRIBUTING.md](CONTRIBUTING.md). Good first issues include new achievement badges, refined scoring, more demo profiles, and improved share-card layouts.
 
 ## License
 
-MIT
+MIT. See [LICENSE](LICENSE).
