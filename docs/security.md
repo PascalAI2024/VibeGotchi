@@ -18,7 +18,7 @@ That is read-only profile access. The app does not request:
 
 Authenticated scoring uses GitHub's contribution calendar through GraphQL. This gives contribution counts and dates without reading repository source code.
 
-Tech badges use public repository metadata and primary language counts. They do not read repository contents.
+Tech badges use public repository metadata and primary language counts. They do not read repository contents. Display logos are loaded from the public [Simple Icons](https://github.com/simple-icons/simple-icons) CDN as SVG images.
 
 ## Secret Handling
 
@@ -56,4 +56,4 @@ sequenceDiagram
 
 ## Known Tradeoff
 
-The current browser app receives the GitHub access token after OAuth and uses it directly against GitHub APIs. That is acceptable for a small open-source demo using read-only scopes, but a more hardened version would proxy all GitHub API reads through Cloudflare Functions and keep the token server-side.
+Current limitation: the browser receives the GitHub access token after OAuth and uses it directly against GitHub APIs. Production hardening should proxy GitHub API reads through Cloudflare Functions and keep tokens server-side.

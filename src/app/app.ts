@@ -232,12 +232,31 @@ export class App {
 
   private demoTechBadges(entries: [string, number][]): TechBadge[] {
     return entries.map(([tech, repoCount]) => {
-      if (repoCount >= 20) return { tech, repoCount, level: 5, tier: 'Legend' };
-      if (repoCount >= 10) return { tech, repoCount, level: 4, tier: 'Platinum' };
-      if (repoCount >= 5) return { tech, repoCount, level: 3, tier: 'Gold' };
-      if (repoCount >= 3) return { tech, repoCount, level: 2, tier: 'Silver' };
-      return { tech, repoCount, level: 1, tier: 'Bronze' };
+      const iconSlug = this.demoIconSlug(tech);
+      const iconUrl = iconSlug ? `https://cdn.simpleicons.org/${iconSlug}?viewbox=auto` : null;
+
+      if (repoCount >= 20) return { tech, repoCount, iconSlug, iconUrl, level: 5, tier: 'Legend' };
+      if (repoCount >= 10) return { tech, repoCount, iconSlug, iconUrl, level: 4, tier: 'Platinum' };
+      if (repoCount >= 5) return { tech, repoCount, iconSlug, iconUrl, level: 3, tier: 'Gold' };
+      if (repoCount >= 3) return { tech, repoCount, iconSlug, iconUrl, level: 2, tier: 'Silver' };
+      return { tech, repoCount, iconSlug, iconUrl, level: 1, tier: 'Bronze' };
     });
+  }
+
+  private demoIconSlug(tech: string): string | null {
+    const slugMap: Record<string, string> = {
+      Angular: 'angular',
+      CSS: 'css',
+      Go: 'go',
+      HTML: 'html5',
+      JavaScript: 'javascript',
+      Python: 'python',
+      Rust: 'rust',
+      Shell: 'gnubash',
+      TypeScript: 'typescript',
+    };
+
+    return slugMap[tech] || null;
   }
 
   private demoState(state: Omit<PetState, 'achievements' | 'scoreBreakdown' | 'personalityLine'>): PetState {

@@ -10,6 +10,14 @@ assignees: ""
 
 ## Proposed solution
 
+## Affected area
+
+- Landing
+- Dashboard
+- Scoring
+- OAuth
+- Docs
+
 ## Why it fits VibeGotchi
 
 ## Screenshots, sketches, or examples

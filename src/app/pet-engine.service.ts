@@ -282,10 +282,51 @@ export class PetEngineService {
       .map(([tech, repoCount]) => ({
         tech,
         repoCount,
+        iconSlug: this.getSimpleIconSlug(tech),
+        iconUrl: this.getSimpleIconUrl(tech),
         ...this.getBadgeRank(repoCount),
       }))
       .sort((a, b) => b.level - a.level || b.repoCount - a.repoCount || a.tech.localeCompare(b.tech))
       .slice(0, 12);
+  }
+
+  private getSimpleIconSlug(tech: string): string | null {
+    const slugMap: Record<string, string> = {
+      Astro: 'astro',
+      C: 'c',
+      'C#': 'dotnet',
+      'C++': 'cplusplus',
+      CSS: 'css',
+      Dart: 'dart',
+      Dockerfile: 'docker',
+      Elixir: 'elixir',
+      Go: 'go',
+      HTML: 'html5',
+      Java: 'openjdk',
+      JavaScript: 'javascript',
+      'Jupyter Notebook': 'jupyter',
+      Kotlin: 'kotlin',
+      Lua: 'lua',
+      MDX: 'mdx',
+      PHP: 'php',
+      Python: 'python',
+      R: 'r',
+      Ruby: 'ruby',
+      Rust: 'rust',
+      Sass: 'sass',
+      Shell: 'gnubash',
+      Svelte: 'svelte',
+      Swift: 'swift',
+      TypeScript: 'typescript',
+      Vue: 'vuedotjs',
+    };
+
+    return slugMap[tech] || null;
+  }
+
+  private getSimpleIconUrl(tech: string): string | null {
+    const slug = this.getSimpleIconSlug(tech);
+    return slug ? `https://cdn.simpleicons.org/${slug}?viewbox=auto` : null;
   }
 
   private getBadgeRank(repoCount: number): Pick<TechBadge, 'level' | 'tier'> {

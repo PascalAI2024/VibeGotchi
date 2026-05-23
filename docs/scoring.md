@@ -43,6 +43,7 @@ The dashboard exposes these sources in the score breakdown.
 ## Tech Badges
 
 VibeGotchi counts each non-fork public owned repository by its primary GitHub language.
+Mapped languages display SVG marks from [Simple Icons](https://github.com/simple-icons/simple-icons). Unmapped languages still receive ranked badges with a text fallback.
 
 | Level | Tier | Public owned repo count |
 | ---: | --- | ---: |

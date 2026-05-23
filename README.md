@@ -1,6 +1,8 @@
 # VibeGotchi
 
-![VibeGotchi evolution banner](public/vibegotchi-banner.jpeg)
+<p align="center">
+  <img src="public/vibegotchi-banner.jpeg" alt="VibeGotchi evolution banner" width="960">
+</p>
 
 **A GitHub-powered virtual pet that evolves from coding activity.**
 
@@ -9,7 +11,14 @@
 [![Angular](https://img.shields.io/badge/Angular-21-dd0031?style=for-the-badge&logo=angular&logoColor=white)](https://angular.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-VibeGotchi turns GitHub activity into XP, health, mood, streaks, achievement badges, tech badges, and evolution stages. It is built to be simple enough to understand in a minute, but polished enough for a competition demo.
+VibeGotchi turns GitHub activity into XP, health, mood, streaks, achievement badges, tech badges, and evolution stages. It is built to be simple enough to understand in a minute, but polished enough for a public product demo.
+
+## Judge This Fast
+
+1. Open https://vibegotchi.pages.dev.
+2. Click the `Elder` demo card for the richest dashboard state.
+3. Check the read-only OAuth copy, tech-logo badges, achievements, score breakdown, and share card.
+4. Optional: log in with GitHub to verify real contribution-history scoring without private repo access.
 
 ## Quick Links
 
@@ -25,9 +34,14 @@ VibeGotchi turns GitHub activity into XP, health, mood, streaks, achievement bad
 
 ## Screenshots
 
-| Home | Dashboard | Mobile |
-| --- | --- | --- |
-| ![Home screen](docs/assets/screenshots/home.png) | ![Pet dashboard](docs/assets/screenshots/dashboard.png) | ![Mobile view](docs/assets/screenshots/mobile.png) |
+<p align="center">
+  <img src="docs/assets/screenshots/home.png" alt="VibeGotchi home screen" width="960">
+</p>
+
+<p align="center">
+  <img src="docs/assets/screenshots/dashboard.png" alt="VibeGotchi dashboard" width="620">
+  <img src="docs/assets/screenshots/mobile.png" alt="VibeGotchi mobile dashboard" width="220">
+</p>
 
 ## Why It Is Interesting
 
@@ -37,6 +51,7 @@ Most GitHub activity demos stop at charts. VibeGotchi makes the activity legible
 - Read-only GitHub OAuth unlocks contribution-history scoring.
 - Public username lookup works without login.
 - Tech badges rank languages by how many public owned repos use each tech.
+- Mapped tech badges display official-style SVG logos from [Simple Icons](https://github.com/simple-icons/simple-icons), with text initials as a fallback.
 - Achievement badges reward streaks, polyglot work, specialist lanes, and evolution milestones.
 - A transparent XP breakdown explains why a user reached their level.
 - A downloadable share card gives the demo a clean final artifact.
@@ -81,6 +96,10 @@ read:user
 ```
 
 It does **not** ask for `repo`, write access, admin access, workflows, org admin, or private repository contents. Current scoring uses contribution counts, contribution dates, public events, and public repository language metadata.
+
+## Technology Logos
+
+Tech badge icons are loaded from the [Simple Icons](https://github.com/simple-icons/simple-icons) public logo set through `cdn.simpleicons.org`. The app stores only the language-to-icon slug mapping; unsupported languages fall back to a compact text mark.
 
 ## Local Development
 

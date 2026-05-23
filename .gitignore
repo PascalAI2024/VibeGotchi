@@ -1,9 +1,17 @@
 node_modules/
 dist/
 .angular/
+.cache/
+.vite/
+.wrangler/
 .env
 .env.*
 !.env.example
 .DS_Store
+*.local
+*.log
 npm-debug.log*
 artifacts/
+coverage/
+playwright-report/
+test-results/

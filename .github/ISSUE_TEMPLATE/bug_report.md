@@ -8,6 +8,8 @@ assignees: ""
 
 ## What happened?
 
+## Affected page or URL
+
 ## Steps to reproduce
 
 1.
@@ -22,3 +24,4 @@ assignees: ""
 
 - Browser:
 - Deployment: Cloudflare Pages / GitHub Pages / local
+- Logged in with GitHub: Yes / No

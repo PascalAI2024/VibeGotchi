@@ -37,6 +37,8 @@ export interface GitHubRepository {
 export interface TechBadge {
   tech: string;
   repoCount: number;
+  iconSlug: string | null;
+  iconUrl: string | null;
   level: number;
   tier: 'Bronze' | 'Silver' | 'Gold' | 'Platinum' | 'Legend';
 }

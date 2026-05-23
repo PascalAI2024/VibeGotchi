@@ -148,9 +148,24 @@ import { MatIconModule } from '@angular/material/icon';
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             @for (badge of state.techBadges; track badge.tech) {
               <div class="border border-slate-800 bg-slate-950/60 rounded-lg px-3 py-2 flex items-center justify-between gap-3">
-                <div class="min-w-0">
-                  <div class="text-sm font-bold text-slate-100 truncate">{{badge.tech}}</div>
-                  <div class="text-[11px] text-slate-500 font-mono">{{badge.repoCount}} repos</div>
+                <div class="min-w-0 flex items-center gap-3">
+                  <div class="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-slate-800 bg-slate-900">
+                    @if (badge.iconUrl) {
+                      <img
+                        class="h-5 w-5"
+                        [src]="badge.iconUrl"
+                        [alt]="badge.tech + ' logo'"
+                        loading="lazy"
+                        referrerpolicy="no-referrer"
+                      >
+                    } @else {
+                      <span class="text-xs font-bold text-slate-400">{{badge.tech.slice(0, 2).toUpperCase()}}</span>
+                    }
+                  </div>
+                  <div class="min-w-0">
+                    <div class="text-sm font-bold text-slate-100 truncate">{{badge.tech}}</div>
+                    <div class="text-[11px] text-slate-500 font-mono">{{badge.repoCount}} repos</div>
+                  </div>
                 </div>
                 <div
                   class="shrink-0 rounded-md border px-2 py-1 text-right"

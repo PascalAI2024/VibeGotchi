@@ -1,8 +1,6 @@
 {
-  "name": "Remix: Vibe Gotchi",
-  "description": "A virtual pet that grows and thrives based on your GitHub commit activity. Ship code to keep it alive!",
+  "name": "VibeGotchi",
+  "description": "A GitHub-powered virtual pet that evolves from public coding activity.",
   "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
+  "majorCapabilities": []
 }

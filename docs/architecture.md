@@ -15,8 +15,8 @@ flowchart TB
 
   subgraph Cloudflare Pages
     E[Static Angular Assets]
-    F[/api/auth/url]
-    G[/auth/callback]
+    F["/api/auth/url"]
+    G["/auth/callback"]
     H[Encrypted Env Secret: GITHUB_CLIENT_SECRET]
   end
 
