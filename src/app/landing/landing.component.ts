@@ -9,16 +9,27 @@ import { PetState } from '../models';
   standalone: true,
   imports: [FormsModule, MatIconModule, PetComponent],
   template: `
-    <div class="min-h-screen w-full max-w-full overflow-x-hidden px-5 py-8 sm:px-6 lg:px-8">
+    <div class="min-h-screen w-full max-w-full overflow-x-hidden px-5 py-8 sm:px-6 lg:px-8 landing-shell">
       <div class="mx-auto flex w-full max-w-6xl flex-col gap-8">
         <section class="grid items-center gap-8 pt-8 lg:min-h-[760px] lg:grid-cols-[0.9fr_1.1fr] lg:pt-0">
           <div class="animate-fade-in-up text-left">
-            <div class="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-[11px] font-mono uppercase tracking-wider text-emerald-300">
-              <mat-icon class="text-[15px] w-[15px] h-[15px]">verified_user</mat-icon>
-              Read-only GitHub scoring
+            <div class="mb-4 flex flex-wrap items-center gap-2">
+              <div class="inline-flex items-center gap-2 rounded-full border border-lime-400/40 bg-lime-400/10 px-3 py-1 text-[11px] font-mono uppercase tracking-wider text-lime-200 shadow-[0_0_24px_rgba(163,230,53,0.18)]">
+                <mat-icon class="text-[15px] w-[15px] h-[15px]">verified_user</mat-icon>
+                Read-only GitHub scoring
+              </div>
+              <a
+                href="https://github.com/PascalAI2024/VibeGotchi"
+                target="_blank"
+                rel="noreferrer"
+                class="inline-flex items-center gap-1 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-3 py-1 text-[11px] font-mono uppercase tracking-wider text-fuchsia-200 transition-colors hover:border-fuchsia-300 hover:text-white"
+              >
+                <mat-icon class="text-[14px] w-[14px] h-[14px]">code</mat-icon>
+                GitHub project
+              </a>
             </div>
 
-            <h1 class="mb-4 max-w-xl text-5xl font-sans font-extrabold leading-[0.95] text-transparent bg-clip-text bg-gradient-to-br from-emerald-400 via-teal-300 to-indigo-500 drop-shadow-[0_0_15px_rgba(52,211,153,0.3)] sm:text-7xl lg:text-8xl">
+            <h1 class="mb-4 max-w-xl text-5xl font-sans font-extrabold leading-[0.95] text-transparent bg-clip-text bg-gradient-to-br from-lime-300 via-emerald-300 to-fuchsia-400 drop-shadow-[0_0_18px_rgba(163,230,53,0.28)] sm:text-7xl lg:text-8xl">
               VIBE GOTCHI
             </h1>
             <p class="max-w-xl text-base leading-7 text-slate-400 sm:text-lg">
@@ -26,31 +37,31 @@ import { PetState } from '../models';
             </p>
 
             <div class="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <div class="rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2">
-                <div class="text-[10px] font-mono uppercase tracking-wider text-slate-500">Connect</div>
+              <div class="rounded-lg border border-lime-400/20 bg-slate-900/70 px-3 py-2 shadow-[inset_0_0_18px_rgba(163,230,53,0.05)]">
+                <div class="text-[10px] font-mono uppercase tracking-wider text-lime-300/70">Connect</div>
                 <div class="text-sm font-bold text-slate-100">GitHub</div>
               </div>
-              <div class="rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2">
-                <div class="text-[10px] font-mono uppercase tracking-wider text-slate-500">Score</div>
+              <div class="rounded-lg border border-cyan-400/20 bg-slate-900/70 px-3 py-2 shadow-[inset_0_0_18px_rgba(34,211,238,0.05)]">
+                <div class="text-[10px] font-mono uppercase tracking-wider text-cyan-300/70">Score</div>
                 <div class="text-sm font-bold text-slate-100">Activity</div>
               </div>
-              <div class="rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2">
-                <div class="text-[10px] font-mono uppercase tracking-wider text-slate-500">Evolve</div>
+              <div class="rounded-lg border border-fuchsia-400/20 bg-slate-900/70 px-3 py-2 shadow-[inset_0_0_18px_rgba(217,70,239,0.05)]">
+                <div class="text-[10px] font-mono uppercase tracking-wider text-fuchsia-300/70">Evolve</div>
                 <div class="text-sm font-bold text-slate-100">Pet</div>
               </div>
-              <div class="rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2">
-                <div class="text-[10px] font-mono uppercase tracking-wider text-slate-500">Share</div>
+              <div class="rounded-lg border border-emerald-400/20 bg-slate-900/70 px-3 py-2 shadow-[inset_0_0_18px_rgba(52,211,153,0.05)]">
+                <div class="text-[10px] font-mono uppercase tracking-wider text-emerald-300/70">Share</div>
                 <div class="text-sm font-bold text-slate-100">Card</div>
               </div>
             </div>
 
-            <div class="mt-7 max-w-xl rounded-lg border border-slate-800 bg-slate-950/70 p-4 shadow-2xl shadow-black/30">
+            <div class="mt-7 max-w-xl rounded-lg border border-lime-400/20 bg-slate-950/75 p-4 shadow-2xl shadow-black/30">
               <button
                 (click)="handleLogin()"
                 [disabled]="isLoading || isAuthUnavailable()"
-                class="group relative mb-4 flex w-full items-center justify-center gap-2 overflow-hidden rounded-lg border border-emerald-500/30 bg-emerald-500/10 py-4 font-bold uppercase tracking-widest text-emerald-300 transition-all hover:border-emerald-500 hover:bg-emerald-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                class="group relative mb-4 flex w-full items-center justify-center gap-2 overflow-hidden rounded-lg border border-lime-400/40 bg-lime-400/10 py-4 font-bold uppercase tracking-widest text-lime-200 transition-all hover:border-lime-300 hover:bg-lime-400/20 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <div class="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/10 to-emerald-500/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-lime-400/0 via-lime-400/10 to-lime-400/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
                 @if (isLoading) {
                   <mat-icon class="animate-spin relative z-10 w-[20px] h-[20px] text-[20px]">sync</mat-icon>
                   <span class="relative z-10">Authenticating...</span>
@@ -85,7 +96,7 @@ import { PetState } from '../models';
                 type="button"
                 (click)="handleEnhancedLogin()"
                 [disabled]="isLoading || enhancedAuthAvailable() !== true"
-                class="mb-4 flex w-full items-center justify-center gap-2 rounded-lg border border-cyan-400/30 bg-cyan-500/10 py-3 text-sm font-bold uppercase tracking-widest text-cyan-200 transition-all hover:border-cyan-300 hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                class="mb-4 flex w-full items-center justify-center gap-2 rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 py-3 text-sm font-bold uppercase tracking-widest text-fuchsia-100 transition-all hover:border-fuchsia-300 hover:bg-fuchsia-500/20 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <mat-icon class="text-[18px] w-[18px] h-[18px]">admin_panel_settings</mat-icon>
                 @if (enhancedAuthAvailable() === undefined) {
@@ -117,9 +128,9 @@ import { PetState } from '../models';
                 <button
                   type="submit"
                   [disabled]="!username() || isLoading"
-                  class="group relative flex h-12 items-center justify-center gap-2 overflow-hidden rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-5 font-bold uppercase tracking-widest text-indigo-300 transition-all hover:border-indigo-500 hover:bg-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                  class="group relative flex h-12 items-center justify-center gap-2 overflow-hidden rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-5 font-bold uppercase tracking-widest text-cyan-200 transition-all hover:border-cyan-300 hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/10 to-indigo-500/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                  <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/10 to-cyan-500/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
                   @if (isLoading) {
                     <mat-icon class="animate-spin relative z-10 w-[20px] h-[20px] text-[20px]">sync</mat-icon>
                     <span class="relative z-10">Syncing</span>
@@ -139,13 +150,16 @@ import { PetState } from '../models';
           </div>
 
           <div class="animate-fade-in-up lg:pt-10" style="animation-delay: 120ms;">
-            <img
-              src="vibegotchi-banner.jpeg"
-              alt="VibeGotchi evolution banner"
-              class="block w-full rounded-lg border border-slate-800 shadow-2xl shadow-black/40"
-              loading="eager"
-              fetchpriority="high"
-            />
+            <div class="relative overflow-hidden rounded-2xl border border-lime-400/25 bg-slate-950 shadow-[0_0_60px_rgba(163,230,53,0.12)]">
+              <div class="absolute inset-0 border-2 border-fuchsia-400/10 pointer-events-none"></div>
+              <img
+                src="vibegotchi-hero.png"
+                alt="VibeGotchi neon virtual pet hero"
+                class="block aspect-[16/9] w-full object-cover"
+                loading="eager"
+                fetchpriority="high"
+              />
+            </div>
           </div>
         </section>
 
@@ -163,9 +177,9 @@ import { PetState } from '../models';
               <button
                 type="button"
                 (click)="demo.emit(demoState)"
-                class="group text-left bg-slate-900/70 hover:bg-slate-800/80 border border-slate-800 hover:border-emerald-500/60 rounded-lg p-3 transition-all shadow-lg"
-                [class.border-emerald-500]="demoState.stage === 'Elder'"
-                [class.bg-emerald-500/10]="demoState.stage === 'Elder'"
+                class="group text-left bg-slate-900/70 hover:bg-slate-800/80 border border-slate-800 hover:border-lime-400/60 rounded-lg p-3 transition-all shadow-lg"
+                [class.border-lime-400]="demoState.stage === 'Elder'"
+                [class.bg-lime-400/10]="demoState.stage === 'Elder'"
               >
                 <div class="h-28 flex items-center justify-center overflow-hidden rounded-md bg-slate-950/40">
                   <div class="w-32 scale-75 group-hover:scale-[0.8] transition-transform">
@@ -177,7 +191,7 @@ import { PetState } from '../models';
                     <div class="text-sm font-bold text-slate-100">{{demoState.stage}}</div>
                     <div class="text-xs font-mono text-slate-500">Lvl {{demoState.level}} · {{demoState.mood}}</div>
                   </div>
-                  <mat-icon class="text-[18px] w-[18px] h-[18px] text-slate-500 group-hover:text-emerald-400">play_arrow</mat-icon>
+                  <mat-icon class="text-[18px] w-[18px] h-[18px] text-slate-500 group-hover:text-lime-300">play_arrow</mat-icon>
                 </div>
               </button>
             }
@@ -187,6 +201,12 @@ import { PetState } from '../models';
     </div>
   `,
   styles: [`
+    .landing-shell {
+      background:
+        linear-gradient(90deg, rgba(163, 230, 53, 0.08) 0 1px, transparent 1px 80px),
+        linear-gradient(180deg, rgba(217, 70, 239, 0.06) 0 1px, transparent 1px 80px);
+      background-size: 80px 80px;
+    }
     @keyframes fade-in-up {
       0% { opacity: 0; transform: translateY(20px); }
       100% { opacity: 1; transform: translateY(0); }
