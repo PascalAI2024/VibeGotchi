@@ -58,6 +58,11 @@
               "outputMode": "static",
               "outputHashing": "all"
             },
+            "cloudflare": {
+              "baseHref": "/",
+              "outputMode": "static",
+              "outputHashing": "all"
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,

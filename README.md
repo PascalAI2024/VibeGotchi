@@ -56,6 +56,8 @@ Root directory: /
 Node version: 22
 ```
 
+`npm run build:pages` automatically selects the Cloudflare root-path build when `CF_PAGES` is present. GitHub Actions uses the same command but keeps the `/VibeGotchi/` base path required by GitHub Pages.
+
 The included `functions/` directory is deployed by Cloudflare Pages and handles:
 
 - `/api/auth/url`
@@ -76,7 +78,8 @@ Repository settings required:
 ```bash
 npm run dev          # Angular dev server
 npm run build        # Production build with SSR output
-npm run build:pages  # Static build for GitHub Pages
+npm run build:pages  # Static Pages build; auto-detects Cloudflare vs GitHub Pages
+npm run build:cloudflare # Static root-path build for Cloudflare Pages
 npm run lint         # ESLint
 npm test             # Unit tests
 ```
