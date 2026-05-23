@@ -1,21 +1,54 @@
 # VibeGotchi
 
-A GitHub-powered virtual pet that evolves with your commit activity.
+![VibeGotchi evolution banner](public/vibegotchi-banner.jpeg)
 
-VibeGotchi reads recent public GitHub events, turns pushes and streaks into XP, and renders a tiny judgmental companion with five stages: Egg, Baby, Teen, Adult, and Elder. The app also includes an evolution demo, so visitors can preview the full lifecycle without pretending they commit every day. Civilised.
+A GitHub-powered virtual pet that evolves from your coding activity.
+
+VibeGotchi turns GitHub activity into XP, health, mood, streaks, and pet evolution stages. Visitors can try a public username lookup without logging in, or use read-only GitHub OAuth on the Cloudflare deployment for a richer contribution-history view.
+
+Live deployments:
+
+- Cloudflare Pages: https://vibegotchi.pages.dev
+- GitHub Pages: https://pascalai2024.github.io/VibeGotchi/
+- Source: https://github.com/PascalAI2024/VibeGotchi
 
 ## Features
 
 - Public GitHub username lookup with no login required
-- Optional GitHub OAuth login for higher API rate limits
-- Evolution demo for all pet stages
-- Animated SVG pet states and posture controls
-- Static GitHub Pages deployment
-- Cloudflare Pages deployment with same-origin OAuth Functions
+- Read-only GitHub OAuth login on Cloudflare Pages
+- Contribution-graph scoring for authenticated users
+- Public-events fallback for unauthenticated lookups
+- Evolution demo for Egg, Baby, Teen, Adult, and Elder stages
+- Animated SVG pet with mood, posture, health, XP, and streak display
+- Free hosting path for both Cloudflare Pages and GitHub Pages
+
+## How It Works
+
+```mermaid
+flowchart LR
+  Visitor[Visitor] --> Landing[VibeGotchi Landing]
+  Landing --> Demo[Evolution Demo]
+  Landing --> PublicLookup[Public Username Lookup]
+  Landing --> GitHubLogin[Read-only GitHub Login]
+
+  PublicLookup --> PublicEvents[GitHub REST public events]
+  GitHubLogin --> OAuth[Cloudflare Pages OAuth Functions]
+  OAuth --> GitHubOAuth[GitHub OAuth App]
+  GitHubLogin --> GraphQL[GitHub GraphQL contribution calendar]
+
+  PublicEvents --> Engine[Pet Engine]
+  GraphQL --> Engine
+  Engine --> Dashboard[Pet Dashboard]
+```
+
+Authenticated login asks GitHub for `read:user` only. It does not request `repo`, write access, admin access, webhooks, organization access, or private repository contents. The app reads contribution counts and dates, not source code.
 
 ## Local Development
 
-Prerequisites: Node.js 22 and npm.
+Prerequisites:
+
+- Node.js 22
+- npm
 
 ```bash
 npm install
@@ -24,29 +57,22 @@ npm run dev
 
 Open `http://localhost:3000`.
 
-## GitHub Login
+Useful scripts:
 
-GitHub Pages cannot exchange OAuth codes because it cannot keep a client secret. The repo therefore ships two modes:
+```bash
+npm run dev               # Angular dev server
+npm run build             # Production SSR-capable build
+npm run build:pages       # Static Pages build; auto-detects Cloudflare
+npm run build:cloudflare  # Static root-path build for Cloudflare Pages
+npm run lint              # ESLint
+npm run typecheck:functions
+```
 
-- Static Pages app: public lookup and demo work immediately.
-- Cloudflare Pages app: deploy from GitHub and use the included `functions/` routes for same-origin OAuth.
+## Deployment
 
-### Create the GitHub OAuth App
+Cloudflare Pages is the primary hosted app because it can run the OAuth callback securely. GitHub Pages is kept as a static public/demo deployment.
 
-In GitHub, create an OAuth app with:
-
-- Homepage URL: `https://vibegotchi.pages.dev/`
-- Authorization callback URL: `https://vibegotchi.pages.dev/auth/callback`
-
-Set `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` in Cloudflare Pages environment variables.
-
-For local SSR testing, copy `.env.example` to `.env` and run the built server after `npm run build`.
-
-## Deploy on Cloudflare Pages
-
-Create a Cloudflare Pages project connected to `PascalAI2024/VibeGotchi`.
-
-Build settings:
+Cloudflare Pages settings:
 
 ```text
 Framework preset: None
@@ -56,32 +82,39 @@ Root directory: /
 Node version: 22
 ```
 
-`npm run build:pages` automatically selects the Cloudflare root-path build when `CF_PAGES` is present. GitHub Actions uses the same command but keeps the `/VibeGotchi/` base path required by GitHub Pages.
+Required Cloudflare environment variables:
 
-The included `functions/` directory is deployed by Cloudflare Pages and handles:
+```text
+GITHUB_CLIENT_ID=your_github_oauth_client_id
+GITHUB_CLIENT_SECRET=stored_as_cloudflare_secret
+NODE_VERSION=22
+```
 
-- `/api/auth/url`
-- `/auth/callback`
+GitHub OAuth app settings:
 
-## Deploy on GitHub Pages
+```text
+Homepage URL: https://vibegotchi.pages.dev/
+Authorization callback URL: https://vibegotchi.pages.dev/auth/callback
+OAuth scope requested by app: read:user
+```
 
-The included workflow deploys on pushes to `main`.
+`npm run build:pages` uses the Cloudflare root base path when Cloudflare sets `CF_PAGES`. GitHub Actions runs the same command without `CF_PAGES`, so GitHub Pages keeps the required `/VibeGotchi/` base path.
 
-Repository settings required:
+More detail:
 
-- Pages source: GitHub Actions
-- Actions enabled
-- Optional repository variable: `AUTH_API_BASE_URL`
+- [Architecture](docs/architecture.md)
+- [Deployment Runbook](docs/deployment.md)
+- [Security Notes](docs/security.md)
 
-## Scripts
+## Repository Layout
 
-```bash
-npm run dev          # Angular dev server
-npm run build        # Production build with SSR output
-npm run build:pages  # Static Pages build; auto-detects Cloudflare vs GitHub Pages
-npm run build:cloudflare # Static root-path build for Cloudflare Pages
-npm run lint         # ESLint
-npm test             # Unit tests
+```text
+src/app/                 Angular app components, services, and pet engine
+functions/api/auth/url.ts Cloudflare Pages Function that creates GitHub OAuth URLs
+functions/auth/callback.ts Cloudflare Pages Function that exchanges OAuth codes
+public/config.json       Runtime client config
+public/vibegotchi-banner.jpeg
+scripts/build-pages.mjs  Pages build selector for GitHub vs Cloudflare
 ```
 
 ## License
