@@ -36,6 +36,7 @@ import { MatIconModule } from '@angular/material/icon';
              [demoStates]="demoStates"
              (connect)="handleConnect($event)"
              (authFinish)="handleAuthFinish($event)"
+             (enhancedAuthFinish)="handleEnhancedAuthFinish($event)"
              (demo)="handleDemo($event)">
           </app-landing>
         }
@@ -199,15 +200,51 @@ export class App {
         this.github.getAuthenticatedContributionSummary(),
         this.github.getRepositories(),
       ]);
+      const enrichedRepos = await this.github.enrichRepositoriesWithPackageTech(repos);
       const state = contributionSummary
-        ? this.engine.calculateStateFromContributionSummary(contributionSummary, repos)
-        : this.engine.calculateState(await this.github.getUserEvents(user.login), repos);
+        ? this.engine.calculateStateFromContributionSummary(contributionSummary, enrichedRepos)
+        : this.engine.calculateState(await this.github.getUserEvents(user.login), enrichedRepos);
       
       this.currentUser.set(user);
       this.currentState.set(state);
     } catch (e) {
       console.error(e);
       this.errorMsg.set('An error occurred during authentication. Please try again.');
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async handleEnhancedAuthFinish(token: string) {
+    this.isLoading.set(true);
+    this.errorMsg.set('');
+    try {
+      this.github.setToken(token);
+
+      const user = await this.github.getUser();
+      if (!user) {
+        this.errorMsg.set('Failed to fetch authenticated user.');
+        this.reset();
+        return;
+      }
+
+      const [contributionSummary, repos] = await Promise.all([
+        this.github.getAuthenticatedContributionSummary(),
+        this.github.getRepositories(),
+      ]);
+      const enrichedRepos = await this.github.enrichRepositoriesWithPackageTech(repos);
+      const state = contributionSummary
+        ? this.engine.calculateStateFromContributionSummary(contributionSummary, enrichedRepos)
+        : this.engine.calculateState(await this.github.getUserEvents(user.login), enrichedRepos);
+
+      this.currentUser.set(user);
+      this.currentState.set({
+        ...state,
+        activitySource: 'Enhanced read-only GitHub App repo access',
+      });
+    } catch (e) {
+      console.error(e);
+      this.errorMsg.set('Enhanced repo read failed. Install the GitHub App on selected repos, then try again.');
     } finally {
       this.isLoading.set(false);
     }
@@ -251,6 +288,7 @@ export class App {
       HTML: 'html5',
       JavaScript: 'javascript',
       Python: 'python',
+      React: 'react',
       Rust: 'rust',
       Shell: 'gnubash',
       TypeScript: 'typescript',

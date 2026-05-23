@@ -42,8 +42,10 @@ The dashboard exposes these sources in the score breakdown.
 
 ## Tech Badges
 
-VibeGotchi counts each non-fork public owned repository by its primary GitHub language.
+VibeGotchi counts each visible non-fork repository by its primary GitHub language. Authenticated users can include owned, collaborator, and organization-member repositories that GitHub exposes under the active token.
 Mapped languages display SVG marks from [Simple Icons](https://github.com/simple-icons/simple-icons). Unmapped languages still receive ranked badges with a text fallback.
+
+Private/company contributions can affect the contribution graph signal. Enhanced mode can also score private/company repository metadata and package manifests when the user installs the GitHub App with read-only access on selected repositories.
 
 | Level | Tier | Public owned repo count |
 | ---: | --- | ---: |

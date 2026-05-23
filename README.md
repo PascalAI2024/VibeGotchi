@@ -64,7 +64,9 @@ Most GitHub activity demos stop at charts. VibeGotchi makes the activity legible
 - A pet evolves through `Egg`, `Baby`, `Teen`, `Adult`, and `Elder`.
 - Read-only GitHub OAuth unlocks contribution-history scoring.
 - Public username lookup works without login.
-- Tech badges rank languages by how many public owned repos use each tech.
+- Tech badges rank languages by visible public repos, including public org/collaborator repos available to the authenticated account.
+- Optional GitHub App enhanced mode reads selected repos with read-only permissions for private/company repo badges and package/framework detection.
+- Private and company contribution activity can also be detected through GitHub's contribution graph without reading private repository names or source code.
 - Mapped tech badges display official-style SVG logos from [Simple Icons](https://github.com/simple-icons/simple-icons), with text initials as a fallback.
 - Achievement badges reward streaks, polyglot work, specialist lanes, and evolution milestones.
 - A transparent XP breakdown explains why a user reached their level.
@@ -109,7 +111,9 @@ VibeGotchi asks GitHub for:
 read:user
 ```
 
-It does **not** ask for `repo`, write access, admin access, workflows, org admin, or private repository contents. Current scoring uses contribution counts, contribution dates, public events, and public repository language metadata.
+It does **not** ask for `repo`, write access, admin access, workflows, org admin, or private repository contents. Current scoring uses contribution counts, contribution dates, public events, visible public repository language metadata, and GitHub's restricted/private contribution count signal.
+
+Enhanced repo scoring uses a GitHub App, not classic OAuth `repo`. Users install it on selected repositories with `Metadata: read-only` and `Contents: read-only` so VibeGotchi can detect repo languages and package/framework usage without write access.
 
 ## Technology Logos
 

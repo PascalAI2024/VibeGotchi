@@ -69,8 +69,8 @@ export class GithubService {
         });
 
         if (!username) {
-          params.set('visibility', 'public');
-          params.set('affiliation', 'owner');
+          params.set('visibility', 'all');
+          params.set('affiliation', 'owner,collaborator,organization_member');
         }
 
         const pageRepos = await firstValueFrom(
@@ -89,6 +89,77 @@ export class GithubService {
       console.error('Error fetching repositories', error);
       return repos;
     }
+  }
+
+  async enrichRepositoriesWithPackageTech(repos: GitHubRepository[]): Promise<GitHubRepository[]> {
+    const enriched: GitHubRepository[] = [];
+    const candidates = repos.filter((repo) => !repo.fork && repo.full_name).slice(0, 80);
+    const candidateNames = new Set(candidates.map((repo) => repo.full_name));
+
+    for (const repo of repos) {
+      if (!repo.full_name || !candidateNames.has(repo.full_name)) {
+        enriched.push(repo);
+        continue;
+      }
+
+      enriched.push({
+        ...repo,
+        detectedTechs: await this.detectPackageTech(repo.full_name),
+      });
+    }
+
+    return enriched;
+  }
+
+  private async detectPackageTech(fullName: string): Promise<string[]> {
+    try {
+      const response = await firstValueFrom(
+        this.http.get<{ content?: string; encoding?: string }>(
+          `https://api.github.com/repos/${fullName}/contents/package.json`,
+          { headers: this.getHeaders() },
+        )
+      );
+
+      if (!response.content || response.encoding !== 'base64') {
+        return [];
+      }
+
+      const packageJson = JSON.parse(atob(response.content.replace(/\n/g, ''))) as {
+        dependencies?: Record<string, string>;
+        devDependencies?: Record<string, string>;
+      };
+      const dependencies = new Set([
+        ...Object.keys(packageJson.dependencies || {}),
+        ...Object.keys(packageJson.devDependencies || {}),
+      ].map((dependency) => dependency.toLowerCase()));
+
+      return this.mapDependenciesToTechs(dependencies);
+    } catch {
+      return [];
+    }
+  }
+
+  private mapDependenciesToTechs(dependencies: Set<string>): string[] {
+    const techs: string[] = [];
+    const has = (...names: string[]) => names.some((name) => dependencies.has(name));
+
+    if (has('@angular/core')) techs.push('Angular');
+    if (has('react')) techs.push('React');
+    if (has('next')) techs.push('Next.js');
+    if (has('vue')) techs.push('Vue');
+    if (has('svelte')) techs.push('Svelte');
+    if (has('astro')) techs.push('Astro');
+    if (has('@remix-run/react')) techs.push('Remix');
+    if (has('tailwindcss')) techs.push('Tailwind CSS');
+    if (has('vite')) techs.push('Vite');
+    if (has('express')) techs.push('Express');
+    if (has('@nestjs/core')) techs.push('NestJS');
+    if (has('three')) techs.push('Three.js');
+    if (has('firebase')) techs.push('Firebase');
+    if (has('@supabase/supabase-js')) techs.push('Supabase');
+    if (has('prisma', '@prisma/client')) techs.push('Prisma');
+
+    return techs;
   }
 
   async getAuthenticatedContributionSummary(): Promise<GitHubContributionSummary | null> {

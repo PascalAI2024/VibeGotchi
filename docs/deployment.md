@@ -29,6 +29,8 @@ Environment variables:
 ```text
 GITHUB_CLIENT_ID      Plaintext is acceptable
 GITHUB_CLIENT_SECRET  Cloudflare Secret only
+GITHUB_APP_CLIENT_ID  Plaintext is acceptable; optional enhanced mode
+GITHUB_APP_CLIENT_SECRET Cloudflare Secret only; optional enhanced mode
 NODE_VERSION          22
 ```
 
@@ -44,7 +46,29 @@ Authorization callback URL: https://vibegotchi.pages.dev/auth/callback
 Requested scope: read:user
 ```
 
-Do not request `repo` scope unless the product deliberately changes to inspect repository contents. That is not needed for current scoring.
+Do not request classic OAuth `repo` scope. Use the GitHub App enhanced mode for selected read-only repo access.
+
+## GitHub App Enhanced Mode
+
+Enhanced mode is optional. It lets users install VibeGotchi on selected personal or organization repositories so the app can read repo metadata and package manifests without write access.
+
+GitHub App settings:
+
+```text
+Homepage URL: https://vibegotchi.pages.dev/
+Callback URL: https://vibegotchi.pages.dev/github-app/callback
+Expire user authorization tokens: enabled
+Request user authorization during installation: enabled
+```
+
+Repository permissions:
+
+```text
+Metadata: Read-only
+Contents: Read-only
+```
+
+Do not request write permissions, administration, issues, pull requests, workflows, deployments, or secrets. Users should install the app only on repositories they want VibeGotchi to score.
 
 ## GitHub Pages
 
@@ -80,6 +104,7 @@ npm run typecheck:functions
 CF_PAGES=1 npm run build:pages
 curl -s https://vibegotchi.pages.dev/ | rg '<base href="/"'
 curl -s -o /dev/null -w '%{http_code}\n' 'https://vibegotchi.pages.dev/api/auth/url?origin=https%3A%2F%2Fvibegotchi.pages.dev'
+curl -s -o /dev/null -w '%{http_code}\n' 'https://vibegotchi.pages.dev/api/github-app/url?origin=https%3A%2F%2Fvibegotchi.pages.dev'
 ```
 
 Expected auth URL status: `200`.

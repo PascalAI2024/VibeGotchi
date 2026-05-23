@@ -29,9 +29,12 @@ export interface GitHubContributionSummary {
 
 export interface GitHubRepository {
   name: string;
+  full_name?: string;
   html_url: string;
   fork: boolean;
   language: string | null;
+  private?: boolean;
+  detectedTechs?: string[];
 }
 
 export interface TechBadge {
@@ -65,6 +68,7 @@ export interface PetState {
   daysSinceLastCommit: number;
   commitStreak: number;
   recentCommitsCount: number; // in last 90 days (from events)
+  privateContributionsCount?: number;
   topLanguage: string | null;
   lastCommitMessage: string | null;
   activitySource?: string;

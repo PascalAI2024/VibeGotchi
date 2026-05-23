@@ -24,6 +24,7 @@ export class PetEngineService {
       daysSinceLastCommit: 999,
       commitStreak: 0,
       recentCommitsCount: 0,
+      privateContributionsCount: 0,
       topLanguage: 'Unknown',
       lastCommitMessage: null,
       posture: 'Stand',
@@ -148,6 +149,7 @@ export class PetEngineService {
       daysSinceLastCommit: daysSinceLast,
       commitStreak: streak,
       recentCommitsCount: totalPushes,
+      privateContributionsCount: 0,
       topLanguage: 'Code', 
       lastCommitMessage,
       activitySource: 'Recent public GitHub events',
@@ -232,6 +234,7 @@ export class PetEngineService {
       daysSinceLastCommit: daysSinceLast,
       commitStreak: streak,
       recentCommitsCount: summary.totalContributions,
+      privateContributionsCount: summary.restrictedContributionsCount,
       topLanguage: 'GitHub',
       lastCommitMessage: summary.restrictedContributionsCount > 0
         ? `${summary.totalContributions} contributions in the last year, including ${summary.restrictedContributionsCount} private contribution(s).`
@@ -271,11 +274,21 @@ export class PetEngineService {
     const counts = new Map<string, number>();
 
     for (const repo of repos) {
-      if (repo.fork || !repo.language) {
+      if (repo.fork) {
         continue;
       }
 
-      counts.set(repo.language, (counts.get(repo.language) || 0) + 1);
+      const repoTechs = new Set<string>();
+      if (repo.language) {
+        repoTechs.add(repo.language);
+      }
+      for (const tech of repo.detectedTechs || []) {
+        repoTechs.add(tech);
+      }
+
+      for (const tech of repoTechs) {
+        counts.set(tech, (counts.get(tech) || 0) + 1);
+      }
     }
 
     return [...counts.entries()]
@@ -293,6 +306,7 @@ export class PetEngineService {
   private getSimpleIconSlug(tech: string): string | null {
     const slugMap: Record<string, string> = {
       Astro: 'astro',
+      Angular: 'angular',
       C: 'c',
       'C#': 'dotnet',
       'C++': 'cplusplus',
@@ -300,6 +314,8 @@ export class PetEngineService {
       Dart: 'dart',
       Dockerfile: 'docker',
       Elixir: 'elixir',
+      Express: 'express',
+      Firebase: 'firebase',
       Go: 'go',
       HTML: 'html5',
       Java: 'openjdk',
@@ -309,7 +325,12 @@ export class PetEngineService {
       Lua: 'lua',
       MDX: 'mdx',
       PHP: 'php',
+      NestJS: 'nestjs',
+      'Next.js': 'nextdotjs',
       Python: 'python',
+      Prisma: 'prisma',
+      React: 'react',
+      Remix: 'remix',
       R: 'r',
       Ruby: 'ruby',
       Rust: 'rust',
@@ -317,7 +338,11 @@ export class PetEngineService {
       Shell: 'gnubash',
       Svelte: 'svelte',
       Swift: 'swift',
+      Supabase: 'supabase',
+      'Tailwind CSS': 'tailwindcss',
+      'Three.js': 'threedotjs',
       TypeScript: 'typescript',
+      Vite: 'vite',
       Vue: 'vuedotjs',
     };
 

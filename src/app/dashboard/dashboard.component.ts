@@ -41,6 +41,20 @@ import { MatIconModule } from '@angular/material/icon';
         </div>
       </section>
 
+      @if ((state.privateContributionsCount || 0) > 0) {
+        <section class="w-full max-w-4xl mb-6 bg-indigo-950/30 border border-indigo-400/20 rounded-lg p-4">
+          <div class="flex items-start gap-3">
+            <mat-icon class="text-indigo-300 mt-0.5">domain_verification</mat-icon>
+            <div>
+              <div class="text-[10px] uppercase tracking-wider text-slate-500 font-mono mb-1">Private and org activity detected</div>
+              <p class="text-slate-300 text-sm">
+                GitHub reports {{state.privateContributionsCount}} restricted contribution{{state.privateContributionsCount === 1 ? '' : 's'}} in the contribution graph. VibeGotchi counts the activity signal, but does not request private repo names, source, or language metadata.
+              </p>
+            </div>
+          </div>
+        </section>
+      }
+
       <!-- Main Stage -->
       <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6">
         
@@ -142,7 +156,7 @@ import { MatIconModule } from '@angular/material/icon';
               <mat-icon class="text-[18px] w-[18px] h-[18px] text-emerald-400">workspace_premium</mat-icon>
               <h3 class="text-sm uppercase tracking-wider font-semibold">Tech Badges</h3>
             </div>
-            <span class="text-[10px] uppercase tracking-wider text-slate-500 font-mono">By public repo language count</span>
+            <span class="text-[10px] uppercase tracking-wider text-slate-500 font-mono">By visible public repo language count</span>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">

@@ -16,9 +16,16 @@ That is read-only profile access. The app does not request:
 - write scopes
 - organization administration
 
-Authenticated scoring uses GitHub's contribution calendar through GraphQL. This gives contribution counts and dates without reading repository source code.
+Optional enhanced mode uses a GitHub App instead of classic OAuth `repo`. The GitHub App should request only:
 
-Tech badges use public repository metadata and primary language counts. They do not read repository contents. Display logos are loaded from the public [Simple Icons](https://github.com/simple-icons/simple-icons) CDN as SVG images.
+- `Metadata: read-only`
+- `Contents: read-only`
+
+Users install the GitHub App on selected repositories or organizations. This is the preferred path for private/company repo scoring because it avoids broad OAuth repo access.
+
+Authenticated scoring uses GitHub's contribution calendar through GraphQL. This gives contribution counts, dates, and restricted/private contribution count signals without reading repository source code.
+
+Tech badges use visible repository metadata and primary language counts. Enhanced mode can also read `package.json` manifests from selected repositories to detect frameworks and libraries such as Angular, React, Next.js, Tailwind CSS, Express, Prisma, Supabase, and Vite. Display logos are loaded from the public [Simple Icons](https://github.com/simple-icons/simple-icons) CDN as SVG images.
 
 ## Secret Handling
 
@@ -53,6 +60,8 @@ sequenceDiagram
   CF-->>App: Post token to opener
   App->>GH: Read user and contribution graph
 ```
+
+Enhanced mode uses the same popup pattern, but exchanges the code through `/github-app/callback` with the GitHub App client credentials.
 
 ## Known Tradeoff
 
