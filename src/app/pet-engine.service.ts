@@ -1,5 +1,12 @@
 import { Injectable } from '@angular/core';
-import { GitHubContributionSummary, GitHubEvent, GitHubRepository, PetState, TechBadge } from './models';
+import {
+  AchievementBadge,
+  GitHubContributionSummary,
+  GitHubEvent,
+  GitHubRepository,
+  PetState,
+  TechBadge,
+} from './models';
 
 @Injectable({
   providedIn: 'root'
@@ -20,14 +27,23 @@ export class PetEngineService {
       topLanguage: 'Unknown',
       lastCommitMessage: null,
       posture: 'Stand',
-      techBadges: []
+      techBadges: [],
+      achievements: [],
+      scoreBreakdown: [],
+      personalityLine: 'Awaiting signs of life from the commit mines.'
     };
   }
   
   calculateState(events: GitHubEvent[], repos: GitHubRepository[] = []): PetState {
     const defaultState = this.createDefaultState();
 
-    if (!events || events.length === 0) return defaultState;
+    if (!events || events.length === 0) {
+      return this.enrichState({
+        ...defaultState,
+        techBadges: this.calculateTechBadges(repos),
+        activitySource: 'Recent public GitHub events',
+      });
+    }
 
     const pushEvents = events.filter(e => e.type === 'PushEvent');
     
@@ -94,7 +110,11 @@ export class PetEngineService {
 
     // Determine XP / Level
     // rough estimate: 1 push = 10 XP, formula Lvl = Math.floor(sqrt(XP / 10)) + 1
-    const xp = totalPushes * 15 + streak * 50;
+    const pushXp = totalPushes * 15;
+    const streakXp = streak * 50;
+    const techBadges = this.calculateTechBadges(repos);
+    const badgeXp = techBadges.reduce((sum, badge) => sum + badge.level * 25, 0);
+    const xp = pushXp + streakXp + badgeXp;
     const level = Math.floor(Math.sqrt(xp / 20)) + 1;
     const xpToNextLevel = Math.pow(level, 2) * 20;
 
@@ -117,7 +137,7 @@ export class PetEngineService {
     else if (streak > 2) mood = 'Ecstatic';
     else if (health > 70) mood = 'Happy';
 
-    return {
+    return this.enrichState({
       stage,
       health,
       mood,
@@ -131,8 +151,13 @@ export class PetEngineService {
       topLanguage: 'Code', 
       lastCommitMessage,
       activitySource: 'Recent public GitHub events',
-      techBadges: this.calculateTechBadges(repos)
-    };
+      techBadges,
+      scoreBreakdown: [
+        { label: 'Recent pushes', value: pushXp },
+        { label: 'Active streak', value: streakXp },
+        { label: 'Tech badges', value: badgeXp },
+      ],
+    });
   }
 
   calculateStateFromContributionSummary(summary: GitHubContributionSummary, repos: GitHubRepository[] = []): PetState {
@@ -143,7 +168,9 @@ export class PetEngineService {
       return {
         ...defaultState,
         activitySource: 'Read-only GitHub contribution graph',
-        techBadges: this.calculateTechBadges(repos)
+        techBadges: this.calculateTechBadges(repos),
+        achievements: this.calculateAchievements(defaultState),
+        scoreBreakdown: [{ label: 'No recent contributions found', value: 0 }],
       };
     }
 
@@ -171,7 +198,12 @@ export class PetEngineService {
       dateWalker.setDate(dateWalker.getDate() - 1);
     }
 
-    const xp = summary.totalContributions * 10 + summary.totalCommitContributions * 5 + streak * 50;
+    const contributionXp = summary.totalContributions * 10;
+    const commitXp = summary.totalCommitContributions * 5;
+    const streakXp = streak * 50;
+    const techBadges = this.calculateTechBadges(repos);
+    const badgeXp = techBadges.reduce((sum, badge) => sum + badge.level * 25, 0);
+    const xp = contributionXp + commitXp + streakXp + badgeXp;
     const level = Math.max(1, Math.floor(Math.sqrt(xp / 35)) + 1);
     const xpToNextLevel = Math.pow(level, 2) * 35;
     let health = Math.max(0, 100 - daysSinceLast * 12);
@@ -189,7 +221,7 @@ export class PetEngineService {
     else if (streak > 2 || summary.totalContributions >= 100) mood = 'Ecstatic';
     else if (health > 70) mood = 'Happy';
 
-    return {
+    return this.enrichState({
       stage,
       health,
       mood,
@@ -205,7 +237,33 @@ export class PetEngineService {
         ? `${summary.totalContributions} contributions in the last year, including ${summary.restrictedContributionsCount} private contribution(s).`
         : `${summary.totalContributions} contributions in the last year.`,
       activitySource: 'Read-only GitHub contribution graph',
-      techBadges: this.calculateTechBadges(repos)
+      techBadges,
+      scoreBreakdown: [
+        { label: 'Yearly contributions', value: contributionXp },
+        { label: 'Commit contributions', value: commitXp },
+        { label: 'Active streak', value: streakXp },
+        { label: 'Tech badges', value: badgeXp },
+      ],
+    });
+  }
+
+  enrichState(
+    state: Omit<PetState, 'achievements' | 'personalityLine'> &
+      Partial<Pick<PetState, 'achievements' | 'personalityLine'>>
+  ): PetState {
+    const normalizedState: PetState = {
+      ...state,
+      achievements: state.achievements || [],
+      personalityLine: state.personalityLine || '',
+    };
+
+    return {
+      ...normalizedState,
+      achievements: normalizedState.achievements.length ? normalizedState.achievements : this.calculateAchievements(normalizedState),
+      personalityLine: normalizedState.personalityLine || this.getPersonalityLine(normalizedState),
+      scoreBreakdown: normalizedState.scoreBreakdown.length
+        ? normalizedState.scoreBreakdown.filter((item) => item.value > 0)
+        : [{ label: 'Base score', value: normalizedState.xp }],
     };
   }
 
@@ -236,5 +294,64 @@ export class PetEngineService {
     if (repoCount >= 5) return { level: 3, tier: 'Gold' };
     if (repoCount >= 3) return { level: 2, tier: 'Silver' };
     return { level: 1, tier: 'Bronze' };
+  }
+
+  private calculateAchievements(state: PetState): AchievementBadge[] {
+    const achievements: AchievementBadge[] = [];
+    const topBadgeLevel = Math.max(0, ...state.techBadges.map((badge) => badge.level));
+
+    if (state.recentCommitsCount > 0) {
+      achievements.push({
+        name: 'First Signal',
+        description: 'GitHub activity detected. The creature has stopped sulking.',
+        icon: 'bolt',
+      });
+    }
+
+    if (state.commitStreak >= 7) {
+      achievements.push({
+        name: 'Streak Keeper',
+        description: `${state.commitStreak} active days in sequence.`,
+        icon: 'local_fire_department',
+      });
+    }
+
+    if (state.techBadges.length >= 4) {
+      achievements.push({
+        name: 'Polyglot',
+        description: `${state.techBadges.length} active tech lanes detected.`,
+        icon: 'hub',
+      });
+    }
+
+    if (topBadgeLevel >= 4) {
+      achievements.push({
+        name: 'Specialist',
+        description: 'At least one tech badge reached platinum or better.',
+        icon: 'workspace_premium',
+      });
+    }
+
+    if (state.level >= 10) {
+      achievements.push({
+        name: 'Elder Maintainer',
+        description: 'Reached the elder evolution tier.',
+        icon: 'auto_awesome',
+      });
+    }
+
+    return achievements.slice(0, 5);
+  }
+
+  private getPersonalityLine(state: PetState): string {
+    if (state.health === 0) return 'The pet is not angry. Just disappointed. Terminally.';
+    if (state.level >= 10) return 'Ancient commit energy detected. Slightly terrifying, mostly useful.';
+    if (state.commitStreak >= 7) return 'A proper streak. The pet has stopped drafting resignation letters.';
+    if (state.techBadges.some((badge) => badge.level >= 4)) return 'Specialist detected. The badge cabinet is no longer decorative.';
+    if (state.techBadges.length >= 4) return 'Polyglot behavior confirmed. Chaotic, but marketable.';
+    if (state.daysSinceLastCommit > 14) return 'The repository garden appears to need watering.';
+    if (state.mood === 'Ecstatic') return 'Suspiciously productive. Continue before someone schedules a meeting.';
+    if (state.mood === 'Happy') return 'Healthy commit pulse. The pet approves, quietly.';
+    return 'Stable, but not exactly setting the leaderboard on fire.';
   }
 }

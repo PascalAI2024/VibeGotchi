@@ -49,6 +49,10 @@ import { PetState } from '../models';
               <span class="relative z-10">Login with GitHub</span>
             }
         </button>
+        <div class="mb-5 flex items-center justify-center gap-2 text-[11px] uppercase tracking-wider text-slate-500 font-mono">
+          <mat-icon class="text-[15px] w-[15px] h-[15px] text-emerald-400">verified_user</mat-icon>
+          Read-only GitHub login. No repo access. No writes.
+        </div>
 
         <div class="flex items-center text-slate-500 text-sm font-mono mb-6 before:flex-1 before:border-t before:border-slate-800 before:mr-4 after:flex-1 after:border-t after:border-slate-800 after:ml-4">
           OR PUBLIC LOOKUP
@@ -98,7 +102,7 @@ import { PetState } from '../models';
         <div class="flex items-end justify-between gap-4 mb-5 text-left">
           <div>
             <h2 class="text-lg md:text-xl font-bold text-slate-100">Evolution demo</h2>
-            <p class="text-sm text-slate-500 font-mono max-w-xs sm:max-w-none">Preview every stage without grinding commits like a Victorian factory owner.</p>
+            <p class="text-sm text-slate-500 font-mono max-w-xs sm:max-w-none">Preview stages, badges, achievements, and score logic without grinding commits like a Victorian factory owner.</p>
           </div>
           <mat-icon class="hidden sm:block text-emerald-400">auto_awesome</mat-icon>
         </div>

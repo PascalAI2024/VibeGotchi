@@ -52,6 +52,7 @@ flowchart LR
   Events --> Engine
   Contributions --> Engine
   Engine --> View[Dashboard pet state]
+  View --> Share[Canvas share card]
 ```
 
 ## Data Sources
@@ -88,6 +89,8 @@ flowchart TD
 ```
 
 The scoring logic lives in `src/app/pet-engine.service.ts`.
+
+Dashboard presentation lives in `src/app/dashboard/dashboard.component.ts` and includes achievements, score breakdowns, tech badges, pet readouts, and the canvas-generated share card.
 
 ## Tech Badge Ranking
 

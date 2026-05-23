@@ -19,11 +19,27 @@ import { MatIconModule } from '@angular/material/icon';
             <p class="text-sm text-slate-400 font-mono">&#64;{{user.login}}</p>
           </div>
         </div>
-        <button (click)="logout.emit()" class="text-slate-400 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium">
-          <mat-icon class="text-[18px] w-[18px] h-[18px]">logout</mat-icon>
-          Switch User
-        </button>
+        <div class="flex items-center gap-3">
+          <button (click)="downloadShareCard()" class="text-emerald-300 hover:text-emerald-200 transition-colors flex items-center gap-2 text-sm font-medium">
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">ios_share</mat-icon>
+            Share Card
+          </button>
+          <button (click)="logout.emit()" class="text-slate-400 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium">
+            <mat-icon class="text-[18px] w-[18px] h-[18px]">logout</mat-icon>
+            Switch User
+          </button>
+        </div>
       </div>
+
+      <section class="w-full max-w-4xl mb-6 bg-slate-900/70 border border-emerald-500/20 rounded-lg p-4">
+        <div class="flex items-start gap-3">
+          <mat-icon class="text-emerald-400 mt-0.5">psychology</mat-icon>
+          <div>
+            <div class="text-[10px] uppercase tracking-wider text-slate-500 font-mono mb-1">Pet readout</div>
+            <p class="text-slate-200 font-mono text-sm md:text-base">{{state.personalityLine}}</p>
+          </div>
+        </div>
+      </section>
 
       <!-- Main Stage -->
       <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -161,6 +177,47 @@ import { MatIconModule } from '@angular/material/icon';
           </div>
         </section>
       }
+
+      @if (state.achievements.length || state.scoreBreakdown.length) {
+        <div class="w-full max-w-4xl mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          @if (state.achievements.length) {
+            <section class="bg-slate-900/60 border border-slate-800 rounded-lg p-4">
+              <div class="flex items-center gap-2 text-slate-300 mb-3">
+                <mat-icon class="text-[18px] w-[18px] h-[18px] text-yellow-300">military_tech</mat-icon>
+                <h3 class="text-sm uppercase tracking-wider font-semibold">Achievements</h3>
+              </div>
+              <div class="flex flex-col gap-2">
+                @for (achievement of state.achievements; track achievement.name) {
+                  <div class="flex items-start gap-3 rounded-md border border-slate-800 bg-slate-950/50 p-2">
+                    <mat-icon class="text-[18px] w-[18px] h-[18px] text-yellow-300 mt-0.5">{{achievement.icon}}</mat-icon>
+                    <div>
+                      <div class="text-sm font-bold text-slate-100">{{achievement.name}}</div>
+                      <div class="text-xs text-slate-500">{{achievement.description}}</div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </section>
+          }
+
+          @if (state.scoreBreakdown.length) {
+            <section class="bg-slate-900/60 border border-slate-800 rounded-lg p-4">
+              <div class="flex items-center gap-2 text-slate-300 mb-3">
+                <mat-icon class="text-[18px] w-[18px] h-[18px] text-indigo-300">query_stats</mat-icon>
+                <h3 class="text-sm uppercase tracking-wider font-semibold">Score Breakdown</h3>
+              </div>
+              <div class="flex flex-col gap-2">
+                @for (item of state.scoreBreakdown; track item.label) {
+                  <div class="flex items-center justify-between gap-3 text-sm font-mono">
+                    <span class="text-slate-400">{{item.label}}</span>
+                    <span class="text-emerald-300">+{{item.value}} XP</span>
+                  </div>
+                }
+              </div>
+            </section>
+          }
+        </div>
+      }
     </div>
   `
 })
@@ -168,4 +225,84 @@ export class DashboardComponent {
   @Input({required: true}) user!: GitHubUser;
   @Input({required: true}) state!: PetState;
   @Output() logout = new EventEmitter<void>();
+
+  downloadShareCard() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1200;
+    canvas.height = 630;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const topBadges = this.state.techBadges.slice(0, 4);
+    const gradient = ctx.createLinearGradient(0, 0, 1200, 630);
+    gradient.addColorStop(0, '#020617');
+    gradient.addColorStop(0.55, '#0f172a');
+    gradient.addColorStop(1, '#064e3b');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 1200, 630);
+
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(28, 28, 1144, 574);
+
+    ctx.fillStyle = '#a7f3d0';
+    ctx.font = '700 30px monospace';
+    ctx.fillText('VIBE GOTCHI', 70, 90);
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = '800 68px sans-serif';
+    ctx.fillText(`${this.state.stage} · Level ${this.state.level}`, 70, 175);
+
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = '28px monospace';
+    ctx.fillText(`@${this.user.login}`, 70, 225);
+    ctx.fillText(`${this.state.mood} · ${this.state.health}% vitality · ${this.state.commitStreak} day streak`, 70, 270);
+
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = '24px monospace';
+    this.wrapText(ctx, this.state.personalityLine, 70, 335, 820, 34);
+
+    ctx.fillStyle = '#10b981';
+    ctx.font = '700 26px monospace';
+    ctx.fillText('Top Tech Badges', 70, 455);
+
+    topBadges.forEach((badge, index) => {
+      const x = 70 + index * 260;
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(x, 485, 230, 82);
+      ctx.strokeStyle = '#334155';
+      ctx.strokeRect(x, 485, 230, 82);
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = '700 24px sans-serif';
+      ctx.fillText(badge.tech.slice(0, 13), x + 18, 522);
+      ctx.fillStyle = '#a7f3d0';
+      ctx.font = '18px monospace';
+      ctx.fillText(`Lv ${badge.level} ${badge.tier}`, x + 18, 552);
+    });
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '18px monospace';
+    ctx.fillText('vibegotchi.pages.dev', 880, 585);
+
+    const link = document.createElement('a');
+    link.download = `vibegotchi-${this.user.login}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }
+
+  private wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
+    const words = text.split(' ');
+    let line = '';
+    for (const word of words) {
+      const testLine = `${line}${word} `;
+      if (ctx.measureText(testLine).width > maxWidth && line) {
+        ctx.fillText(line, x, y);
+        line = `${word} `;
+        y += lineHeight;
+      } else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line, x, y);
+  }
 }

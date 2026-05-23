@@ -52,7 +52,7 @@ export class App {
   isLoading = signal(false);
   errorMsg = signal('');
   demoStates: PetState[] = [
-    {
+    this.demoState({
       stage: 'Egg',
       health: 92,
       mood: 'Happy',
@@ -69,8 +69,8 @@ export class App {
         ['TypeScript', 1],
         ['HTML', 1],
       ])
-    },
-    {
+    }),
+    this.demoState({
       stage: 'Baby',
       health: 100,
       mood: 'Ecstatic',
@@ -88,8 +88,8 @@ export class App {
         ['CSS', 2],
         ['JavaScript', 1],
       ])
-    },
-    {
+    }),
+    this.demoState({
       stage: 'Teen',
       health: 78,
       mood: 'Happy',
@@ -108,8 +108,8 @@ export class App {
         ['CSS', 3],
         ['JavaScript', 2],
       ])
-    },
-    {
+    }),
+    this.demoState({
       stage: 'Adult',
       health: 63,
       mood: 'Neutral',
@@ -128,8 +128,8 @@ export class App {
         ['JavaScript', 5],
         ['Shell', 3],
       ])
-    },
-    {
+    }),
+    this.demoState({
       stage: 'Elder',
       health: 100,
       mood: 'Ecstatic',
@@ -149,7 +149,7 @@ export class App {
         ['Go', 6],
         ['Shell', 5],
       ])
-    }
+    })
   ];
 
   async handleConnect(username: string) {
@@ -237,6 +237,19 @@ export class App {
       if (repoCount >= 5) return { tech, repoCount, level: 3, tier: 'Gold' };
       if (repoCount >= 3) return { tech, repoCount, level: 2, tier: 'Silver' };
       return { tech, repoCount, level: 1, tier: 'Bronze' };
+    });
+  }
+
+  private demoState(state: Omit<PetState, 'achievements' | 'scoreBreakdown' | 'personalityLine'>): PetState {
+    const badgeXp = state.techBadges.reduce((sum, badge) => sum + badge.level * 25, 0);
+    return this.engine.enrichState({
+      ...state,
+      achievements: [],
+      personalityLine: '',
+      scoreBreakdown: [
+        { label: 'Demo activity', value: Math.max(0, state.xp - badgeXp) },
+        { label: 'Tech badges', value: badgeXp },
+      ],
     });
   }
 }

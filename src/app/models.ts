@@ -41,6 +41,17 @@ export interface TechBadge {
   tier: 'Bronze' | 'Silver' | 'Gold' | 'Platinum' | 'Legend';
 }
 
+export interface AchievementBadge {
+  name: string;
+  description: string;
+  icon: string;
+}
+
+export interface ScoreBreakdownItem {
+  label: string;
+  value: number;
+}
+
 export interface PetState {
   stage: 'Egg' | 'Baby' | 'Teen' | 'Adult' | 'Elder';
   health: number; // 0-100
@@ -56,4 +67,7 @@ export interface PetState {
   lastCommitMessage: string | null;
   activitySource?: string;
   techBadges: TechBadge[];
+  achievements: AchievementBadge[];
+  scoreBreakdown: ScoreBreakdownItem[];
+  personalityLine: string;
 }

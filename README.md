@@ -19,6 +19,10 @@ Live deployments:
 - Contribution-graph scoring for authenticated users
 - Public-events fallback for unauthenticated lookups
 - Per-tech badges ranked by how many public owned repos use each language
+- Achievement badges for streaks, specialist lanes, polyglot activity, and evolution milestones
+- Transparent XP breakdown so users can see why the pet reached its level
+- Downloadable share card for demos and social proof
+- Pet personality readout based on health, activity, streaks, and tech depth
 - Evolution demo for Egg, Baby, Teen, Adult, and Elder stages
 - Animated SVG pet with mood, posture, health, XP, and streak display
 - Free hosting path for both Cloudflare Pages and GitHub Pages
@@ -131,6 +135,12 @@ VibeGotchi counts the primary language on each non-fork public owned repository 
 | 5 | Legend | 20+ |
 
 The current implementation intentionally uses public repository language metadata only. That keeps OAuth read-only and avoids asking for `repo` access.
+
+## Competition Demo Hooks
+
+- Click any evolution demo card to show a complete pet profile instantly.
+- Use `Share Card` on the dashboard to download a PNG summary.
+- The dashboard shows the pet's readout, achievements, tech badges, and XP sources without requiring judges to inspect the code.
 
 ## License
 
