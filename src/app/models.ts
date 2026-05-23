@@ -15,6 +15,18 @@ export interface GitHubEvent {
   payload: Record<string, unknown>;
 }
 
+export interface ContributionDay {
+  date: string;
+  contributionCount: number;
+}
+
+export interface GitHubContributionSummary {
+  totalContributions: number;
+  totalCommitContributions: number;
+  restrictedContributionsCount: number;
+  contributionDays: ContributionDay[];
+}
+
 export interface PetState {
   stage: 'Egg' | 'Baby' | 'Teen' | 'Adult' | 'Elder';
   health: number; // 0-100
@@ -28,4 +40,5 @@ export interface PetState {
   recentCommitsCount: number; // in last 90 days (from events)
   topLanguage: string | null;
   lastCommitMessage: string | null;
+  activitySource?: string;
 }

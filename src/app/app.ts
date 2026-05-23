@@ -164,8 +164,10 @@ export class App {
          return;
       }
       
-      const events = await this.github.getUserEvents(user.login);
-      const state = this.engine.calculateState(events);
+      const contributionSummary = await this.github.getAuthenticatedContributionSummary();
+      const state = contributionSummary
+        ? this.engine.calculateStateFromContributionSummary(contributionSummary)
+        : this.engine.calculateState(await this.github.getUserEvents(user.login));
       
       this.currentUser.set(user);
       this.currentState.set(state);

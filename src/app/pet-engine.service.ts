@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
-import { GitHubEvent, PetState } from './models';
+import { GitHubContributionSummary, GitHubEvent, PetState } from './models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PetEngineService {
-  
-  calculateState(events: GitHubEvent[]): PetState {
-    const defaultState: PetState = {
+
+  private createDefaultState(): PetState {
+    return {
       stage: 'Egg',
       health: 100,
       mood: 'Neutral',
@@ -21,6 +21,10 @@ export class PetEngineService {
       lastCommitMessage: null,
       posture: 'Stand'
     };
+  }
+  
+  calculateState(events: GitHubEvent[]): PetState {
+    const defaultState = this.createDefaultState();
 
     if (!events || events.length === 0) return defaultState;
 
@@ -124,7 +128,80 @@ export class PetEngineService {
       commitStreak: streak,
       recentCommitsCount: totalPushes,
       topLanguage: 'Code', 
-      lastCommitMessage
+      lastCommitMessage,
+      activitySource: 'Recent public GitHub events'
+    };
+  }
+
+  calculateStateFromContributionSummary(summary: GitHubContributionSummary): PetState {
+    const defaultState = this.createDefaultState();
+    const activeDays = summary.contributionDays.filter((day) => day.contributionCount > 0);
+
+    if (summary.totalContributions === 0 || activeDays.length === 0) {
+      return {
+        ...defaultState,
+        activitySource: 'Read-only GitHub contribution graph'
+      };
+    }
+
+    const sortedDays = [...summary.contributionDays].sort((a, b) => b.date.localeCompare(a.date));
+    const lastActiveDay = sortedDays.find((day) => day.contributionCount > 0);
+    const now = new Date();
+    const lastActiveDate = lastActiveDay ? new Date(`${lastActiveDay.date}T00:00:00`) : null;
+    const daysSinceLast = lastActiveDate
+      ? Math.floor(Math.abs(now.getTime() - lastActiveDate.getTime()) / (1000 * 60 * 60 * 24))
+      : 999;
+
+    const activeDaySet = new Set(activeDays.map((day) => day.date));
+    let streak = 0;
+    let dateWalker = new Date();
+    const today = dateWalker.toISOString().slice(0, 10);
+    const yesterday = new Date(dateWalker);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (!activeDaySet.has(today) && activeDaySet.has(yesterday.toISOString().slice(0, 10))) {
+      dateWalker = yesterday;
+    }
+
+    while (activeDaySet.has(dateWalker.toISOString().slice(0, 10))) {
+      streak++;
+      dateWalker.setDate(dateWalker.getDate() - 1);
+    }
+
+    const xp = summary.totalContributions * 10 + summary.totalCommitContributions * 5 + streak * 50;
+    const level = Math.max(1, Math.floor(Math.sqrt(xp / 35)) + 1);
+    const xpToNextLevel = Math.pow(level, 2) * 35;
+    let health = Math.max(0, 100 - daysSinceLast * 12);
+    if (daysSinceLast === 0) health = 100;
+
+    let stage: PetState['stage'] = 'Egg';
+    if (level >= 10) stage = 'Elder';
+    else if (level >= 6) stage = 'Adult';
+    else if (level >= 3) stage = 'Teen';
+    else if (level >= 2) stage = 'Baby';
+
+    let mood: PetState['mood'] = 'Neutral';
+    if (health === 0) mood = 'Dead';
+    else if (health < 40) mood = 'Sad';
+    else if (streak > 2 || summary.totalContributions >= 100) mood = 'Ecstatic';
+    else if (health > 70) mood = 'Happy';
+
+    return {
+      stage,
+      health,
+      mood,
+      posture: 'Stand',
+      level,
+      xp,
+      xpToNextLevel,
+      daysSinceLastCommit: daysSinceLast,
+      commitStreak: streak,
+      recentCommitsCount: summary.totalContributions,
+      topLanguage: 'GitHub',
+      lastCommitMessage: summary.restrictedContributionsCount > 0
+        ? `${summary.totalContributions} contributions in the last year, including ${summary.restrictedContributionsCount} private contribution(s).`
+        : `${summary.totalContributions} contributions in the last year.`,
+      activitySource: 'Read-only GitHub contribution graph'
     };
   }
 }

@@ -109,6 +109,11 @@ import { MatIconModule } from '@angular/material/icon';
                  No recent commits detected.
                }
             </div>
+            @if (state.activitySource) {
+              <div class="mt-2 text-[10px] uppercase tracking-wider text-slate-500 font-mono">
+                {{state.activitySource}}
+              </div>
+            }
           </div>
         </div>
 
