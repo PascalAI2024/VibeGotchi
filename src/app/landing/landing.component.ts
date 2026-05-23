@@ -155,7 +155,7 @@ import { PetState } from '../models';
               <img
                 src="vibegotchi-hero.png"
                 alt="VibeGotchi neon virtual pet hero"
-                class="block aspect-[16/9] w-full object-cover"
+                class="block aspect-[3/2] w-full object-cover"
                 loading="eager"
                 fetchpriority="high"
               />
