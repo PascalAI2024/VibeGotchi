@@ -10,10 +10,10 @@ import { PetState } from '../models';
   imports: [FormsModule, MatIconModule, PetComponent],
   template: `
     <div class="min-h-screen w-full max-w-full overflow-x-hidden px-5 py-8 sm:px-6 lg:px-8 landing-shell">
-      <div class="mx-auto flex w-full max-w-6xl flex-col gap-8">
-        <section class="grid items-center gap-8 pt-8 lg:min-h-[760px] lg:grid-cols-[0.9fr_1.1fr] lg:pt-0">
-          <div class="animate-fade-in-up text-left">
-            <div class="mb-4 flex flex-wrap items-center gap-2">
+      <div class="mx-auto flex w-full max-w-7xl flex-col gap-8">
+        <section class="grid min-w-0 items-start gap-8 pt-8 lg:min-h-[760px] lg:grid-cols-[0.78fr_1.22fr] lg:gap-10 lg:pt-16">
+          <div class="min-w-0 animate-fade-in-up text-left">
+            <div class="mb-4 grid max-w-full grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center">
               <div class="inline-flex items-center gap-2 rounded-full border border-lime-400/40 bg-lime-400/10 px-3 py-1 text-[11px] font-mono uppercase tracking-wider text-lime-200 shadow-[0_0_24px_rgba(163,230,53,0.18)]">
                 <mat-icon class="text-[15px] w-[15px] h-[15px]">verified_user</mat-icon>
                 Read-only GitHub scoring
@@ -36,7 +36,7 @@ import { PetState } from '../models';
               A virtual pet that turns GitHub activity into evolution stages, tech badges, achievements, and a shareable score card.
             </p>
 
-            <div class="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div class="mt-6 grid grid-cols-1 gap-2 min-[480px]:grid-cols-2 sm:grid-cols-4">
               <div class="rounded-lg border border-lime-400/20 bg-slate-900/70 px-3 py-2 shadow-[inset_0_0_18px_rgba(163,230,53,0.05)]">
                 <div class="text-[10px] font-mono uppercase tracking-wider text-lime-300/70">Connect</div>
                 <div class="text-sm font-bold text-slate-100">GitHub</div>
@@ -55,7 +55,7 @@ import { PetState } from '../models';
               </div>
             </div>
 
-            <div class="mt-7 max-w-xl rounded-lg border border-lime-400/20 bg-slate-950/75 p-4 shadow-2xl shadow-black/30">
+            <div class="mt-7 max-w-xl min-w-0 rounded-lg border border-lime-400/20 bg-slate-950/75 p-4 shadow-2xl shadow-black/30">
               <button
                 (click)="handleLogin()"
                 [disabled]="isLoading || isAuthUnavailable()"
@@ -77,7 +77,7 @@ import { PetState } from '../models';
                 }
               </button>
 
-              <div class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-mono uppercase tracking-wider text-slate-500">
+              <div class="mb-4 grid min-w-0 grid-cols-1 gap-2 text-[11px] font-mono uppercase tracking-wider text-slate-500 min-[560px]:grid-cols-3">
                 <span class="inline-flex items-center gap-1">
                   <mat-icon class="text-[14px] w-[14px] h-[14px] text-emerald-400">lock_open</mat-icon>
                   No repo scope
@@ -149,13 +149,13 @@ import { PetState } from '../models';
             </div>
           </div>
 
-          <div class="animate-fade-in-up lg:pt-10" style="animation-delay: 120ms;">
+          <div class="min-w-0 animate-fade-in-up lg:-mr-6 lg:pt-[66px] xl:-mr-10" style="animation-delay: 120ms;">
             <div class="relative overflow-hidden rounded-2xl border border-lime-400/25 bg-slate-950 shadow-[0_0_60px_rgba(163,230,53,0.12)]">
               <div class="absolute inset-0 border-2 border-fuchsia-400/10 pointer-events-none"></div>
               <img
-                src="vibegotchi-hero.png"
-                alt="VibeGotchi neon virtual pet hero"
-                class="block aspect-[3/2] w-full object-cover"
+                src="vibegotchi-banner.jpeg"
+                alt="VibeGotchi branded virtual pet poster"
+                class="block aspect-[3/2] w-full max-w-full object-cover object-center"
                 loading="eager"
                 fetchpriority="high"
               />

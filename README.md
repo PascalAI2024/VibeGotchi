@@ -1,7 +1,7 @@
 # VibeGotchi
 
 <p align="center">
-  <img src="public/vibegotchi-hero.png" alt="VibeGotchi neon virtual pet hero" width="960">
+  <img src="public/vibegotchi-banner.jpeg" alt="VibeGotchi branded virtual pet poster" width="960">
 </p>
 
 **A GitHub-powered virtual pet that evolves from coding activity.**
