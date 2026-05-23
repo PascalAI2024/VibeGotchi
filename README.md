@@ -11,7 +11,7 @@ VibeGotchi reads recent public GitHub events, turns pushes and streaks into XP, 
 - Evolution demo for all pet stages
 - Animated SVG pet states and posture controls
 - Static GitHub Pages deployment
-- Optional Cloudflare Worker OAuth proxy for free authenticated login
+- Cloudflare Pages deployment with same-origin OAuth Functions
 
 ## Local Development
 
@@ -29,31 +29,37 @@ Open `http://localhost:3000`.
 GitHub Pages cannot exchange OAuth codes because it cannot keep a client secret. The repo therefore ships two modes:
 
 - Static Pages app: public lookup and demo work immediately.
-- Optional auth proxy: deploy `workers/github-oauth-worker.js` to Cloudflare Workers, then point the Pages app at it.
+- Cloudflare Pages app: deploy from GitHub and use the included `functions/` routes for same-origin OAuth.
 
 ### Create the GitHub OAuth App
 
 In GitHub, create an OAuth app with:
 
-- Homepage URL: `https://pascalai2024.github.io/VibeGotchi/`
-- Authorization callback URL: `https://YOUR-WORKER-DOMAIN.workers.dev/auth/callback`
+- Homepage URL: `https://vibegotchi.pages.dev/`
+- Authorization callback URL: `https://vibegotchi.pages.dev/auth/callback`
 
-Set these Worker secrets:
-
-```bash
-wrangler secret put GITHUB_CLIENT_ID
-wrangler secret put GITHUB_CLIENT_SECRET
-```
-
-Then add a GitHub repository variable named `AUTH_API_BASE_URL`:
-
-```text
-https://YOUR-WORKER-DOMAIN.workers.dev
-```
-
-The Pages workflow writes that value into `public/config.json` at build time.
+Set `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` in Cloudflare Pages environment variables.
 
 For local SSR testing, copy `.env.example` to `.env` and run the built server after `npm run build`.
+
+## Deploy on Cloudflare Pages
+
+Create a Cloudflare Pages project connected to `PascalAI2024/VibeGotchi`.
+
+Build settings:
+
+```text
+Framework preset: None
+Build command: npm run build:pages
+Build output directory: dist/app/browser
+Root directory: /
+Node version: 22
+```
+
+The included `functions/` directory is deployed by Cloudflare Pages and handles:
+
+- `/api/auth/url`
+- `/auth/callback`
 
 ## Deploy on GitHub Pages
 
