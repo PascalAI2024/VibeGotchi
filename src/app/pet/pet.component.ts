@@ -19,7 +19,7 @@ import { animate } from 'motion';
       ></div>
 
       <!-- Main Pet SVG Container -->
-      <div #petContainer class="relative z-10 w-full h-full p-8 transition-transform duration-1000 ease-in-out">
+      <div #petContainer class="relative z-10 w-full h-full p-3 transition-transform duration-1000 ease-in-out sm:p-5">
         
         <!-- DEAD STATE -->
         @if (state.mood === 'Dead') {
@@ -30,6 +30,18 @@ import { animate } from 'motion';
             <text x="50" y="55" font-size="12" font-family="monospace" text-anchor="middle" fill="white">R.I.P.</text>
             <text x="50" y="70" font-size="6" font-family="monospace" text-anchor="middle" fill="white">0 commits</text>
           </svg>
+        } @else if (useSpriteArt) {
+          <img
+            [src]="spriteUrl"
+            [alt]="state.stage + ' VibeGotchi sprite'"
+            class="pet-sprite h-full w-full object-contain drop-shadow-2xl"
+            [class.pet-sprite-ecstatic]="state.mood === 'Ecstatic'"
+            [class.pet-sprite-happy]="state.mood === 'Happy'"
+            [class.pet-sprite-neutral]="state.mood === 'Neutral'"
+            [class.pet-sprite-sad]="state.mood === 'Sad'"
+            [class.pet-sprite-sit]="currentPosture === 'Sit'"
+            [class.pet-sprite-lay]="currentPosture === 'LayDown'"
+          />
         } @else {
           
           <!-- LIVING STATES -->
@@ -356,7 +368,7 @@ import { animate } from 'motion';
       }
       
       <!-- Posture Controls -->
-      @if (interactive && state.stage !== 'Egg' && state.mood !== 'Dead') {
+      @if (interactive && !useSpriteArt && state.stage !== 'Egg' && state.mood !== 'Dead') {
         <div class="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2 z-20 bg-slate-900/50 backdrop-blur pb-1 px-2 rounded-full border border-white/10">
           <button (click)="setPosture('Stand')" class="text-[10px] uppercase tracking-widest font-mono text-white/50 hover:text-white px-2 py-1 transition-colors" [class.text-emerald-400]="currentPosture === 'Stand'" [class.font-bold]="currentPosture === 'Stand'">Stand</button>
           <button (click)="setPosture('Sit')" class="text-[10px] uppercase tracking-widest font-mono text-white/50 hover:text-white px-2 py-1 transition-colors" [class.text-emerald-400]="currentPosture === 'Sit'" [class.font-bold]="currentPosture === 'Sit'">Sit</button>
@@ -368,6 +380,43 @@ import { animate } from 'motion';
   styles: [`
     /* Universal */
     .glow { filter: drop-shadow(0 0 3px currentColor); }
+    .pet-sprite {
+      animation: sprite-idle 3.8s ease-in-out infinite alternate;
+      filter: saturate(1.08) drop-shadow(0 0 20px rgba(163, 230, 53, 0.18));
+      transform-origin: 50% 82%;
+    }
+    .pet-sprite-ecstatic {
+      animation: sprite-hop 0.7s ease-in-out infinite alternate;
+      filter: saturate(1.22) drop-shadow(0 0 24px rgba(163, 230, 53, 0.34));
+    }
+    .pet-sprite-happy {
+      animation-duration: 2.5s;
+    }
+    .pet-sprite-neutral {
+      filter: saturate(1.02) drop-shadow(0 0 16px rgba(34, 211, 238, 0.14));
+    }
+    .pet-sprite-sad {
+      animation: sprite-sad 3.2s ease-in-out infinite alternate;
+      filter: saturate(0.72) drop-shadow(0 0 14px rgba(129, 140, 248, 0.16));
+    }
+    .pet-sprite-sit {
+      transform: translateY(5%) scale(0.96);
+    }
+    .pet-sprite-lay {
+      transform: translateY(12%) rotate(-8deg) scale(0.9);
+    }
+    @keyframes sprite-idle {
+      0% { transform: translateY(0) rotate(-0.8deg) scale(1); }
+      100% { transform: translateY(-3%) rotate(0.8deg) scale(1.015); }
+    }
+    @keyframes sprite-hop {
+      0% { transform: translateY(0) rotate(-1deg) scale(1); }
+      100% { transform: translateY(-7%) rotate(1deg) scale(1.035); }
+    }
+    @keyframes sprite-sad {
+      0% { transform: translateY(4%) rotate(-1deg) scale(0.96); }
+      100% { transform: translateY(6%) rotate(1deg) scale(0.94); }
+    }
     
     @keyframes blink {
       0%, 96%, 98% { transform: scaleY(1); }
@@ -651,8 +700,13 @@ export class PetComponent implements AfterViewInit, OnChanges {
   @Input({ required: true }) state!: PetState;
   @Input() interactive = true;
   @ViewChild('petContainer') petContainer!: ElementRef;
+  readonly useSpriteArt = true;
 
   currentPosture: PetState['posture'] = 'Stand';
+
+  get spriteUrl() {
+    return `assets/pets/vibegotchi-${this.state.stage.toLowerCase()}.png`;
+  }
 
   ngAfterViewInit() {
     this.animateIdle();

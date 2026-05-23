@@ -13,6 +13,16 @@
 
 VibeGotchi turns GitHub activity into XP, health, mood, streaks, achievement badges, tech badges, and evolution stages. It is built to be simple enough to understand in a minute, but polished enough for a public product demo.
 
+## Built With
+
+| Layer | Technologies |
+| --- | --- |
+| App | [Angular](https://angular.dev), [TypeScript](https://www.typescriptlang.org), [Angular Material](https://material.angular.dev), [Tailwind CSS](https://tailwindcss.com) |
+| Auth | [GitHub OAuth](https://docs.github.com/apps/oauth-apps), [GitHub Apps](https://docs.github.com/apps) selected-repo read mode |
+| Hosting | [Cloudflare Pages](https://pages.cloudflare.com), [Cloudflare Pages Functions](https://developers.cloudflare.com/pages/functions), [GitHub Pages](https://pages.github.com) |
+| Automation | [GitHub Actions](https://github.com/features/actions), npm scripts, Angular CLI |
+| Visuals | AI-generated transparent pet sprites, [Simple Icons](https://simpleicons.org) technology logos, GitHub-style share card |
+
 ## Judge This Fast
 
 1. Open https://vibegotchi.pages.dev.

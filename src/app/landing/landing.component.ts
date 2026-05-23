@@ -182,7 +182,7 @@ import { PetState } from '../models';
                 [class.bg-lime-400/10]="demoState.stage === 'Elder'"
               >
                 <div class="h-28 flex items-center justify-center overflow-hidden rounded-md bg-slate-950/40">
-                  <div class="w-32 scale-75 group-hover:scale-[0.8] transition-transform">
+                  <div class="w-40 transition-transform group-hover:scale-105">
                     <app-pet [state]="demoState" [interactive]="false"></app-pet>
                   </div>
                 </div>
@@ -194,6 +194,41 @@ import { PetState } from '../models';
                   <mat-icon class="text-[18px] w-[18px] h-[18px] text-slate-500 group-hover:text-lime-300">play_arrow</mat-icon>
                 </div>
               </button>
+            }
+          </div>
+        </section>
+
+        <section class="w-full animate-fade-in-up pb-14" style="animation-delay: 300ms;">
+          <div class="mb-5 flex items-end justify-between gap-4 text-left">
+            <div>
+              <h2 class="text-lg font-bold text-slate-100 md:text-xl">Built with</h2>
+              <p class="max-w-3xl text-sm font-mono text-slate-500">The visible stack behind the demo, deployment, read-only auth, scoring engine, and project presentation.</p>
+            </div>
+            <mat-icon class="hidden text-cyan-400 sm:block">hub</mat-icon>
+          </div>
+
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            @for (item of stackItems; track item.name) {
+              <a
+                [href]="item.href"
+                target="_blank"
+                rel="noreferrer"
+                class="group flex min-w-0 items-center gap-3 rounded-lg border border-slate-800 bg-slate-900/65 p-3 text-left shadow-lg transition-all hover:border-lime-400/60 hover:bg-slate-800/80"
+              >
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-700/70 bg-slate-950/70">
+                  <img
+                    [src]="item.logo"
+                    [alt]="item.name + ' logo'"
+                    class="h-6 w-6 object-contain"
+                    loading="lazy"
+                  />
+                </span>
+                <span class="min-w-0">
+                  <span class="block truncate text-sm font-bold text-slate-100">{{item.name}}</span>
+                  <span class="block truncate text-xs font-mono text-slate-500">{{item.role}}</span>
+                </span>
+                <mat-icon class="ml-auto hidden text-[17px] text-slate-600 transition-colors group-hover:text-lime-300 min-[420px]:block">open_in_new</mat-icon>
+              </a>
             }
           </div>
         </section>
@@ -224,6 +259,80 @@ export class LandingComponent implements OnInit, OnDestroy {
   username = signal('');
   authApiBaseUrl = signal<string | null | undefined>(undefined);
   enhancedAuthAvailable = signal<boolean | undefined>(undefined);
+  readonly stackItems = [
+    {
+      name: 'Angular',
+      role: 'Standalone UI + SSR-ready build',
+      logo: 'https://cdn.simpleicons.org/angular/DD0031',
+      href: 'https://angular.dev',
+    },
+    {
+      name: 'TypeScript',
+      role: 'Typed scoring and app logic',
+      logo: 'https://cdn.simpleicons.org/typescript/3178C6',
+      href: 'https://www.typescriptlang.org',
+    },
+    {
+      name: 'Tailwind CSS',
+      role: 'Responsive neon interface',
+      logo: 'https://cdn.simpleicons.org/tailwindcss/06B6D4',
+      href: 'https://tailwindcss.com',
+    },
+    {
+      name: 'Angular Material',
+      role: 'Icons and interface primitives',
+      logo: 'https://cdn.simpleicons.org/materialdesign/757575',
+      href: 'https://material.angular.dev',
+    },
+    {
+      name: 'GitHub OAuth',
+      role: 'Read-only contribution login',
+      logo: 'https://cdn.simpleicons.org/github/FFFFFF',
+      href: 'https://docs.github.com/apps/oauth-apps',
+    },
+    {
+      name: 'GitHub Apps',
+      role: 'Selected repo read mode',
+      logo: 'https://cdn.simpleicons.org/github/FFFFFF',
+      href: 'https://docs.github.com/apps',
+    },
+    {
+      name: 'Cloudflare Pages',
+      role: 'Primary app hosting',
+      logo: 'https://cdn.simpleicons.org/cloudflare/F38020',
+      href: 'https://pages.cloudflare.com',
+    },
+    {
+      name: 'Pages Functions',
+      role: 'Server-side token exchange',
+      logo: 'https://cdn.simpleicons.org/cloudflare/F38020',
+      href: 'https://developers.cloudflare.com/pages/functions',
+    },
+    {
+      name: 'GitHub Pages',
+      role: 'Static fallback demo',
+      logo: 'https://cdn.simpleicons.org/githubpages/FFFFFF',
+      href: 'https://pages.github.com',
+    },
+    {
+      name: 'GitHub Actions',
+      role: 'CI and Pages deploy',
+      logo: 'https://cdn.simpleicons.org/githubactions/2088FF',
+      href: 'https://github.com/features/actions',
+    },
+    {
+      name: 'Simple Icons',
+      role: 'Official-style tech logos',
+      logo: 'https://cdn.simpleicons.org/simpleicons/FFFFFF',
+      href: 'https://simpleicons.org',
+    },
+    {
+      name: 'npm',
+      role: 'Package and script workflow',
+      logo: 'https://cdn.simpleicons.org/npm/CB3837',
+      href: 'https://www.npmjs.com',
+    },
+  ];
   @Input() isLoading = false;
   @Input() errorMsg = '';
   @Input({ required: true }) demoStates: PetState[] = [];
