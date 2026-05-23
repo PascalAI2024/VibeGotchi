@@ -26,7 +26,7 @@ jobs:
       - run: npm ci
       - name: Write runtime config
         run: |
-          node -e "const fs=require('fs'); fs.mkdirSync('public',{recursive:true}); fs.writeFileSync('public/config.json', JSON.stringify({ authApiBaseUrl: process.env.AUTH_API_BASE_URL || '' }, null, 2));"
+          node -e "const fs=require('fs'); fs.mkdirSync('public',{recursive:true}); fs.writeFileSync('public/config.json', JSON.stringify({ authApiBaseUrl: process.env.AUTH_API_BASE_URL || null }, null, 2));"
         env:
           AUTH_API_BASE_URL: ${{ vars.AUTH_API_BASE_URL }}
       - run: npm run build:pages

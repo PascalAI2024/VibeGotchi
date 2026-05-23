@@ -226,13 +226,11 @@ export class LandingComponent implements OnInit, OnDestroy {
     try {
       const response = await fetch(new URL('config.json', document.baseURI), { cache: 'no-store' });
       const config = await response.json();
-      const configuredUrl = typeof config.authApiBaseUrl === 'string' ? config.authApiBaseUrl.trim() : '';
+      const configuredUrl = typeof config.authApiBaseUrl === 'string' ? config.authApiBaseUrl.trim() : null;
       this.authApiBaseUrl.set(
-        configuredUrl
+        configuredUrl !== null
           ? configuredUrl.replace(/\/$/, '')
-          : window.location.hostname === 'localhost'
-            ? ''
-            : null
+          : null
       );
     } catch {
       this.authApiBaseUrl.set(window.location.hostname === 'localhost' ? '' : null);
