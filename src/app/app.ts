@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, inject, signal} from '@angular/core';
 import { GithubService } from './github.service';
 import { PetEngineService } from './pet-engine.service';
-import { GitHubUser, PetState } from './models';
+import { GitHubUser, PetState, TechBadge } from './models';
 import { LandingComponent } from './landing/landing.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { MatIconModule } from '@angular/material/icon';
@@ -64,7 +64,11 @@ export class App {
       commitStreak: 1,
       recentCommitsCount: 3,
       topLanguage: 'TypeScript',
-      lastCommitMessage: 'chore: hatch the repo'
+      lastCommitMessage: 'chore: hatch the repo',
+      techBadges: this.demoTechBadges([
+        ['TypeScript', 1],
+        ['HTML', 1],
+      ])
     },
     {
       stage: 'Baby',
@@ -78,7 +82,12 @@ export class App {
       commitStreak: 3,
       recentCommitsCount: 9,
       topLanguage: 'TypeScript',
-      lastCommitMessage: 'feat: add snack-based motivation'
+      lastCommitMessage: 'feat: add snack-based motivation',
+      techBadges: this.demoTechBadges([
+        ['TypeScript', 3],
+        ['CSS', 2],
+        ['JavaScript', 1],
+      ])
     },
     {
       stage: 'Teen',
@@ -92,7 +101,13 @@ export class App {
       commitStreak: 6,
       recentCommitsCount: 18,
       topLanguage: 'TypeScript',
-      lastCommitMessage: 'fix: stop the pet judging my branch names'
+      lastCommitMessage: 'fix: stop the pet judging my branch names',
+      techBadges: this.demoTechBadges([
+        ['TypeScript', 5],
+        ['Python', 3],
+        ['CSS', 3],
+        ['JavaScript', 2],
+      ])
     },
     {
       stage: 'Adult',
@@ -106,7 +121,13 @@ export class App {
       commitStreak: 12,
       recentCommitsCount: 42,
       topLanguage: 'TypeScript',
-      lastCommitMessage: 'refactor: make evolution less dramatic'
+      lastCommitMessage: 'refactor: make evolution less dramatic',
+      techBadges: this.demoTechBadges([
+        ['TypeScript', 10],
+        ['Python', 7],
+        ['JavaScript', 5],
+        ['Shell', 3],
+      ])
     },
     {
       stage: 'Elder',
@@ -120,7 +141,14 @@ export class App {
       commitStreak: 30,
       recentCommitsCount: 100,
       topLanguage: 'TypeScript',
-      lastCommitMessage: 'release: attain questionable wisdom'
+      lastCommitMessage: 'release: attain questionable wisdom',
+      techBadges: this.demoTechBadges([
+        ['TypeScript', 24],
+        ['Python', 14],
+        ['JavaScript', 11],
+        ['Go', 6],
+        ['Shell', 5],
+      ])
     }
   ];
 
@@ -138,8 +166,11 @@ export class App {
          return;
       }
       
-      const events = await this.github.getUserEvents(username);
-      const state = this.engine.calculateState(events);
+      const [events, repos] = await Promise.all([
+        this.github.getUserEvents(username),
+        this.github.getRepositories(username),
+      ]);
+      const state = this.engine.calculateState(events, repos);
       
       this.currentUser.set(user);
       this.currentState.set(state);
@@ -164,10 +195,13 @@ export class App {
          return;
       }
       
-      const contributionSummary = await this.github.getAuthenticatedContributionSummary();
+      const [contributionSummary, repos] = await Promise.all([
+        this.github.getAuthenticatedContributionSummary(),
+        this.github.getRepositories(),
+      ]);
       const state = contributionSummary
-        ? this.engine.calculateStateFromContributionSummary(contributionSummary)
-        : this.engine.calculateState(await this.github.getUserEvents(user.login));
+        ? this.engine.calculateStateFromContributionSummary(contributionSummary, repos)
+        : this.engine.calculateState(await this.github.getUserEvents(user.login), repos);
       
       this.currentUser.set(user);
       this.currentState.set(state);
@@ -194,5 +228,15 @@ export class App {
   reset() {
     this.currentUser.set(null);
     this.currentState.set(null);
+  }
+
+  private demoTechBadges(entries: [string, number][]): TechBadge[] {
+    return entries.map(([tech, repoCount]) => {
+      if (repoCount >= 20) return { tech, repoCount, level: 5, tier: 'Legend' };
+      if (repoCount >= 10) return { tech, repoCount, level: 4, tier: 'Platinum' };
+      if (repoCount >= 5) return { tech, repoCount, level: 3, tier: 'Gold' };
+      if (repoCount >= 3) return { tech, repoCount, level: 2, tier: 'Silver' };
+      return { tech, repoCount, level: 1, tier: 'Bronze' };
+    });
   }
 }

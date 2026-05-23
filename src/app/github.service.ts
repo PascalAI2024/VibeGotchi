@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { GitHubUser, GitHubEvent, GitHubContributionSummary } from './models';
+import { GitHubUser, GitHubEvent, GitHubContributionSummary, GitHubRepository } from './models';
 
 @Injectable({
   providedIn: 'root'
@@ -51,6 +51,43 @@ export class GithubService {
     } catch (error) {
       console.error('Error fetching events', error);
       return [];
+    }
+  }
+
+  async getRepositories(username?: string): Promise<GitHubRepository[]> {
+    const repos: GitHubRepository[] = [];
+    const baseUrl = username
+      ? `https://api.github.com/users/${username}/repos`
+      : 'https://api.github.com/user/repos';
+
+    try {
+      for (let page = 1; page <= 3; page++) {
+        const params = new URLSearchParams({
+          per_page: '100',
+          page: String(page),
+          sort: 'updated',
+        });
+
+        if (!username) {
+          params.set('visibility', 'public');
+          params.set('affiliation', 'owner');
+        }
+
+        const pageRepos = await firstValueFrom(
+          this.http.get<GitHubRepository[]>(`${baseUrl}?${params}`, { headers: this.getHeaders() })
+        );
+
+        repos.push(...(pageRepos || []));
+
+        if (!pageRepos || pageRepos.length < 100) {
+          break;
+        }
+      }
+
+      return repos;
+    } catch (error) {
+      console.error('Error fetching repositories', error);
+      return repos;
     }
   }
 

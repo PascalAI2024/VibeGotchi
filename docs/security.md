@@ -18,6 +18,8 @@ That is read-only profile access. The app does not request:
 
 Authenticated scoring uses GitHub's contribution calendar through GraphQL. This gives contribution counts and dates without reading repository source code.
 
+Tech badges use public repository metadata and primary language counts. They do not read repository contents.
+
 ## Secret Handling
 
 `GITHUB_CLIENT_SECRET` must be stored as a Cloudflare Pages Secret.

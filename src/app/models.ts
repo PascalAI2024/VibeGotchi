@@ -27,6 +27,20 @@ export interface GitHubContributionSummary {
   contributionDays: ContributionDay[];
 }
 
+export interface GitHubRepository {
+  name: string;
+  html_url: string;
+  fork: boolean;
+  language: string | null;
+}
+
+export interface TechBadge {
+  tech: string;
+  repoCount: number;
+  level: number;
+  tier: 'Bronze' | 'Silver' | 'Gold' | 'Platinum' | 'Legend';
+}
+
 export interface PetState {
   stage: 'Egg' | 'Baby' | 'Teen' | 'Adult' | 'Elder';
   health: number; // 0-100
@@ -41,4 +55,5 @@ export interface PetState {
   topLanguage: string | null;
   lastCommitMessage: string | null;
   activitySource?: string;
+  techBadges: TechBadge[];
 }

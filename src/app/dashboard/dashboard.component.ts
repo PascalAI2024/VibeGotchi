@@ -118,6 +118,49 @@ import { MatIconModule } from '@angular/material/icon';
         </div>
 
       </div>
+
+      @if (state.techBadges.length) {
+        <section class="w-full max-w-4xl mt-6 bg-slate-900/60 border border-slate-800 rounded-lg p-4">
+          <div class="flex items-center justify-between gap-3 mb-3">
+            <div class="flex items-center gap-2 text-slate-300">
+              <mat-icon class="text-[18px] w-[18px] h-[18px] text-emerald-400">workspace_premium</mat-icon>
+              <h3 class="text-sm uppercase tracking-wider font-semibold">Tech Badges</h3>
+            </div>
+            <span class="text-[10px] uppercase tracking-wider text-slate-500 font-mono">By public repo language count</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            @for (badge of state.techBadges; track badge.tech) {
+              <div class="border border-slate-800 bg-slate-950/60 rounded-lg px-3 py-2 flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="text-sm font-bold text-slate-100 truncate">{{badge.tech}}</div>
+                  <div class="text-[11px] text-slate-500 font-mono">{{badge.repoCount}} repos</div>
+                </div>
+                <div
+                  class="shrink-0 rounded-md border px-2 py-1 text-right"
+                  [class.border-amber-600]="badge.tier === 'Bronze'"
+                  [class.border-slate-400]="badge.tier === 'Silver'"
+                  [class.border-yellow-400]="badge.tier === 'Gold'"
+                  [class.border-cyan-300]="badge.tier === 'Platinum'"
+                  [class.border-fuchsia-400]="badge.tier === 'Legend'"
+                >
+                  <div
+                    class="text-xs font-bold"
+                    [class.text-amber-500]="badge.tier === 'Bronze'"
+                    [class.text-slate-300]="badge.tier === 'Silver'"
+                    [class.text-yellow-300]="badge.tier === 'Gold'"
+                    [class.text-cyan-300]="badge.tier === 'Platinum'"
+                    [class.text-fuchsia-300]="badge.tier === 'Legend'"
+                  >
+                    Lv {{badge.level}}
+                  </div>
+                  <div class="text-[9px] uppercase tracking-wider text-slate-500">{{badge.tier}}</div>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
     </div>
   `
 })

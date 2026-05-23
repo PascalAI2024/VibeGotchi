@@ -18,6 +18,7 @@ Live deployments:
 - Read-only GitHub OAuth login on Cloudflare Pages
 - Contribution-graph scoring for authenticated users
 - Public-events fallback for unauthenticated lookups
+- Per-tech badges ranked by how many public owned repos use each language
 - Evolution demo for Egg, Baby, Teen, Adult, and Elder stages
 - Animated SVG pet with mood, posture, health, XP, and streak display
 - Free hosting path for both Cloudflare Pages and GitHub Pages
@@ -116,6 +117,20 @@ public/config.json       Runtime client config
 public/vibegotchi-banner.jpeg
 scripts/build-pages.mjs  Pages build selector for GitHub vs Cloudflare
 ```
+
+## Tech Badges
+
+VibeGotchi counts the primary language on each non-fork public owned repository and turns those counts into badge levels:
+
+| Level | Tier | Repo count |
+| --- | --- | --- |
+| 1 | Bronze | 1-2 |
+| 2 | Silver | 3-4 |
+| 3 | Gold | 5-9 |
+| 4 | Platinum | 10-19 |
+| 5 | Legend | 20+ |
+
+The current implementation intentionally uses public repository language metadata only. That keeps OAuth read-only and avoids asking for `repo` access.
 
 ## License
 

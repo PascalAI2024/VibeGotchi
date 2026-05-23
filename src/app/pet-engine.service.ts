@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { GitHubContributionSummary, GitHubEvent, PetState } from './models';
+import { GitHubContributionSummary, GitHubEvent, GitHubRepository, PetState, TechBadge } from './models';
 
 @Injectable({
   providedIn: 'root'
@@ -19,11 +19,12 @@ export class PetEngineService {
       recentCommitsCount: 0,
       topLanguage: 'Unknown',
       lastCommitMessage: null,
-      posture: 'Stand'
+      posture: 'Stand',
+      techBadges: []
     };
   }
   
-  calculateState(events: GitHubEvent[]): PetState {
+  calculateState(events: GitHubEvent[], repos: GitHubRepository[] = []): PetState {
     const defaultState = this.createDefaultState();
 
     if (!events || events.length === 0) return defaultState;
@@ -129,18 +130,20 @@ export class PetEngineService {
       recentCommitsCount: totalPushes,
       topLanguage: 'Code', 
       lastCommitMessage,
-      activitySource: 'Recent public GitHub events'
+      activitySource: 'Recent public GitHub events',
+      techBadges: this.calculateTechBadges(repos)
     };
   }
 
-  calculateStateFromContributionSummary(summary: GitHubContributionSummary): PetState {
+  calculateStateFromContributionSummary(summary: GitHubContributionSummary, repos: GitHubRepository[] = []): PetState {
     const defaultState = this.createDefaultState();
     const activeDays = summary.contributionDays.filter((day) => day.contributionCount > 0);
 
     if (summary.totalContributions === 0 || activeDays.length === 0) {
       return {
         ...defaultState,
-        activitySource: 'Read-only GitHub contribution graph'
+        activitySource: 'Read-only GitHub contribution graph',
+        techBadges: this.calculateTechBadges(repos)
       };
     }
 
@@ -201,7 +204,37 @@ export class PetEngineService {
       lastCommitMessage: summary.restrictedContributionsCount > 0
         ? `${summary.totalContributions} contributions in the last year, including ${summary.restrictedContributionsCount} private contribution(s).`
         : `${summary.totalContributions} contributions in the last year.`,
-      activitySource: 'Read-only GitHub contribution graph'
+      activitySource: 'Read-only GitHub contribution graph',
+      techBadges: this.calculateTechBadges(repos)
     };
+  }
+
+  private calculateTechBadges(repos: GitHubRepository[]): TechBadge[] {
+    const counts = new Map<string, number>();
+
+    for (const repo of repos) {
+      if (repo.fork || !repo.language) {
+        continue;
+      }
+
+      counts.set(repo.language, (counts.get(repo.language) || 0) + 1);
+    }
+
+    return [...counts.entries()]
+      .map(([tech, repoCount]) => ({
+        tech,
+        repoCount,
+        ...this.getBadgeRank(repoCount),
+      }))
+      .sort((a, b) => b.level - a.level || b.repoCount - a.repoCount || a.tech.localeCompare(b.tech))
+      .slice(0, 12);
+  }
+
+  private getBadgeRank(repoCount: number): Pick<TechBadge, 'level' | 'tier'> {
+    if (repoCount >= 20) return { level: 5, tier: 'Legend' };
+    if (repoCount >= 10) return { level: 4, tier: 'Platinum' };
+    if (repoCount >= 5) return { level: 3, tier: 'Gold' };
+    if (repoCount >= 3) return { level: 2, tier: 'Silver' };
+    return { level: 1, tier: 'Bronze' };
   }
 }

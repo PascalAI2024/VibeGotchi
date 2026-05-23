@@ -77,6 +77,9 @@ flowchart TD
   Totals --> XP[XP]
   Totals --> Streak[Streak]
   Totals --> Recency[Days since last contribution]
+  Activity --> Repos[Public owned repos]
+  Repos --> Languages[Primary language counts]
+  Languages --> Badges[Tech badges]
   XP --> Level[Level]
   Level --> Stage[Egg/Baby/Teen/Adult/Elder]
   Recency --> Health[Health]
@@ -85,3 +88,19 @@ flowchart TD
 ```
 
 The scoring logic lives in `src/app/pet-engine.service.ts`.
+
+## Tech Badge Ranking
+
+```mermaid
+flowchart LR
+  Repos[Public owned repos] --> Filter[Ignore forks and empty languages]
+  Filter --> Count[Count repos by primary language]
+  Count --> Rank{Repo count}
+  Rank -->|1-2| Bronze[Level 1 Bronze]
+  Rank -->|3-4| Silver[Level 2 Silver]
+  Rank -->|5-9| Gold[Level 3 Gold]
+  Rank -->|10-19| Platinum[Level 4 Platinum]
+  Rank -->|20+| Legend[Level 5 Legend]
+```
+
+This is deliberately based on repository language metadata rather than source-file inspection. It keeps the app read-only and avoids requesting private repository permissions.
