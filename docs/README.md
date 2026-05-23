@@ -30,4 +30,6 @@ Tracked screenshots live in:
 docs/assets/screenshots/
 ```
 
+Current README images cover the landing screen, evolution demo cards, desktop demo dashboard, and mobile badge view.
+
 Generated one-off local screenshots should stay in ignored `artifacts/` until they are intentionally promoted into docs.

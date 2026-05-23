@@ -34,14 +34,28 @@ VibeGotchi turns GitHub activity into XP, health, mood, streaks, achievement bad
 
 ## Screenshots
 
-<p align="center">
-  <img src="docs/assets/screenshots/home.png" alt="VibeGotchi home screen" width="960">
-</p>
-
-<p align="center">
-  <img src="docs/assets/screenshots/dashboard.png" alt="VibeGotchi dashboard" width="620">
-  <img src="docs/assets/screenshots/mobile.png" alt="VibeGotchi mobile dashboard" width="220">
-</p>
+<table>
+  <tr>
+    <td width="50%">
+      <strong>Landing</strong><br>
+      <img src="docs/assets/screenshots/home.png" alt="VibeGotchi landing screen" width="420">
+    </td>
+    <td width="50%">
+      <strong>Evolution Demo Cards</strong><br>
+      <img src="docs/assets/screenshots/demo-stages.png" alt="VibeGotchi evolution demo cards" width="420">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <strong>Demo Dashboard</strong><br>
+      <img src="docs/assets/screenshots/dashboard.png" alt="VibeGotchi demo dashboard" width="420">
+    </td>
+    <td width="50%">
+      <strong>Mobile Badge View</strong><br>
+      <img src="docs/assets/screenshots/mobile.png" alt="VibeGotchi mobile tech badges and achievements" width="220">
+    </td>
+  </tr>
+</table>
 
 ## Why It Is Interesting
 
