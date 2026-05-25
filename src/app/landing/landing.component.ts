@@ -56,90 +56,127 @@ import { PetState } from '../models';
             </div>
 
             <div class="mt-7 max-w-xl min-w-0 rounded-lg border border-lime-400/20 bg-slate-950/75 p-4 shadow-2xl shadow-black/30">
-              <button
-                (click)="handleLogin()"
-                [disabled]="isLoading || isAuthUnavailable()"
-                class="group relative mb-4 flex w-full items-center justify-center gap-2 overflow-hidden rounded-lg border border-lime-400/40 bg-lime-400/10 py-4 font-bold uppercase tracking-widest text-lime-200 transition-all hover:border-lime-300 hover:bg-lime-400/20 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <div class="absolute inset-0 bg-gradient-to-r from-lime-400/0 via-lime-400/10 to-lime-400/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-                @if (isLoading) {
-                  <mat-icon class="animate-spin relative z-10 w-[20px] h-[20px] text-[20px]">sync</mat-icon>
-                  <span class="relative z-10">Authenticating...</span>
-                } @else if (authApiBaseUrl() === undefined) {
-                  <mat-icon class="animate-spin relative z-10 w-[20px] h-[20px] text-[20px]">sync</mat-icon>
-                  <span class="relative z-10">Preparing GitHub Login...</span>
-                } @else if (authApiBaseUrl() === null) {
-                  <mat-icon class="relative z-10 w-[20px] h-[20px] text-[20px]">lock</mat-icon>
-                  <span class="relative z-10">Login Not Configured</span>
-                } @else {
-                  <mat-icon class="relative z-10 w-[20px] h-[20px] text-[20px]">login</mat-icon>
-                  <span class="relative z-10">Login with GitHub</span>
-                }
-              </button>
+              <div class="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <div class="text-[10px] font-mono uppercase tracking-wider text-lime-300/70">Choose scoring mode</div>
+                  <div class="text-sm text-slate-400">Start with a username. Connect GitHub only when you want deeper contribution data.</div>
+                </div>
+                <mat-icon class="shrink-0 text-lime-300">route</mat-icon>
+              </div>
 
-              <div class="mb-4 grid min-w-0 grid-cols-1 gap-2 text-[11px] font-mono uppercase tracking-wider text-slate-500 min-[560px]:grid-cols-3">
+              <div class="mb-3 rounded-lg border border-cyan-400/30 bg-cyan-500/10 p-3">
+                <div class="mb-3 flex items-start gap-3">
+                  <span class="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-cyan-300 text-sm font-bold text-slate-950">1</span>
+                  <div>
+                    <div class="text-sm font-bold text-cyan-100">Public username lookup</div>
+                    <div class="text-xs leading-5 text-slate-400">No login. Scores recent public activity and visible public repositories.</div>
+                  </div>
+                </div>
+                <form (ngSubmit)="onSubmit()" class="grid gap-3 sm:grid-cols-[1fr_auto]">
+                  <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
+                      <mat-icon>code</mat-icon>
+                    </div>
+                    <input
+                      type="text"
+                      name="username"
+                      [ngModel]="username()"
+                      (ngModelChange)="username.set($event)"
+                      placeholder="GitHub username"
+                      required
+                      autocomplete="off"
+                      class="h-12 w-full rounded-lg border border-slate-700/70 bg-slate-900/80 py-3 pl-12 pr-4 font-mono text-slate-100 placeholder:text-slate-600 shadow-inner transition-all focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
+                    >
+                  </div>
+
+                  <button
+                    type="submit"
+                    [disabled]="!username() || isLoading"
+                    class="group relative flex h-12 items-center justify-center gap-2 overflow-hidden rounded-lg border border-cyan-400/40 bg-cyan-500/15 px-5 font-bold uppercase tracking-widest text-cyan-100 transition-all hover:border-cyan-300 hover:bg-cyan-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/10 to-cyan-500/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                    @if (isLoading) {
+                      <mat-icon class="animate-spin relative z-10 w-[20px] h-[20px] text-[20px]">sync</mat-icon>
+                      <span class="relative z-10">Syncing</span>
+                    } @else {
+                      <mat-icon class="relative z-10 w-[20px] h-[20px] text-[20px]">search</mat-icon>
+                      <span class="relative z-10">Lookup</span>
+                    }
+                  </button>
+                </form>
+              </div>
+
+              <div class="grid gap-3 sm:grid-cols-2">
+                <div class="rounded-lg border border-lime-400/25 bg-lime-400/10 p-3">
+                  <div class="mb-3 flex items-start gap-3">
+                    <span class="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-lime-300 text-sm font-bold text-slate-950">2</span>
+                    <div>
+                      <div class="text-sm font-bold text-lime-100">GitHub login</div>
+                      <div class="text-xs leading-5 text-slate-400">Read-only contribution graph. No repo scope. No writes.</div>
+                    </div>
+                  </div>
+                  <button
+                    (click)="handleLogin()"
+                    [disabled]="isLoading || isAuthUnavailable()"
+                    class="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-lg border border-lime-400/40 bg-lime-400/10 py-3 text-sm font-bold uppercase tracking-widest text-lime-200 transition-all hover:border-lime-300 hover:bg-lime-400/20 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <div class="absolute inset-0 bg-gradient-to-r from-lime-400/0 via-lime-400/10 to-lime-400/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                    @if (isLoading) {
+                      <mat-icon class="animate-spin relative z-10 w-[18px] h-[18px] text-[18px]">sync</mat-icon>
+                      <span class="relative z-10">Authenticating</span>
+                    } @else if (authApiBaseUrl() === undefined) {
+                      <mat-icon class="animate-spin relative z-10 w-[18px] h-[18px] text-[18px]">sync</mat-icon>
+                      <span class="relative z-10">Preparing</span>
+                    } @else if (authApiBaseUrl() === null) {
+                      <mat-icon class="relative z-10 w-[18px] h-[18px] text-[18px]">lock</mat-icon>
+                      <span class="relative z-10">Not configured</span>
+                    } @else {
+                      <mat-icon class="relative z-10 w-[18px] h-[18px] text-[18px]">login</mat-icon>
+                      <span class="relative z-10">Login</span>
+                    }
+                  </button>
+                </div>
+
+                <div class="rounded-lg border border-fuchsia-400/25 bg-fuchsia-500/10 p-3">
+                  <div class="mb-3 flex items-start gap-3">
+                    <span class="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-fuchsia-300 text-sm font-bold text-slate-950">3</span>
+                    <div>
+                      <div class="text-sm font-bold text-fuchsia-100">Enhanced repo read</div>
+                      <div class="text-xs leading-5 text-slate-400">Optional GitHub App access for selected repositories only.</div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    (click)="handleEnhancedLogin()"
+                    [disabled]="isLoading || enhancedAuthAvailable() !== true"
+                    class="flex w-full items-center justify-center gap-2 rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 py-3 text-sm font-bold uppercase tracking-widest text-fuchsia-100 transition-all hover:border-fuchsia-300 hover:bg-fuchsia-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <mat-icon class="text-[18px] w-[18px] h-[18px]">admin_panel_settings</mat-icon>
+                    @if (enhancedAuthAvailable() === undefined) {
+                      Checking
+                    } @else if (enhancedAuthAvailable()) {
+                      Connect App
+                    } @else {
+                      Setup pending
+                    }
+                  </button>
+                </div>
+              </div>
+
+              <div class="mt-4 grid min-w-0 grid-cols-1 gap-2 text-[11px] font-mono uppercase tracking-wider text-slate-500 min-[560px]:grid-cols-3">
                 <span class="inline-flex items-center gap-1">
                   <mat-icon class="text-[14px] w-[14px] h-[14px] text-emerald-400">lock_open</mat-icon>
-                  No repo scope
-                </span>
-                <span class="inline-flex items-center gap-1">
-                  <mat-icon class="text-[14px] w-[14px] h-[14px] text-emerald-400">edit_off</mat-icon>
                   No writes
                 </span>
                 <span class="inline-flex items-center gap-1">
                   <mat-icon class="text-[14px] w-[14px] h-[14px] text-emerald-400">visibility</mat-icon>
-                  Public lookup
+                  Public path first
+                </span>
+                <span class="inline-flex items-center gap-1">
+                  <mat-icon class="text-[14px] w-[14px] h-[14px] text-emerald-400">rule</mat-icon>
+                  Scoped access
                 </span>
               </div>
-
-              <button
-                type="button"
-                (click)="handleEnhancedLogin()"
-                [disabled]="isLoading || enhancedAuthAvailable() !== true"
-                class="mb-4 flex w-full items-center justify-center gap-2 rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 py-3 text-sm font-bold uppercase tracking-widest text-fuchsia-100 transition-all hover:border-fuchsia-300 hover:bg-fuchsia-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <mat-icon class="text-[18px] w-[18px] h-[18px]">admin_panel_settings</mat-icon>
-                @if (enhancedAuthAvailable() === undefined) {
-                  Checking enhanced repo read
-                } @else if (enhancedAuthAvailable()) {
-                  Enhanced repo read
-                } @else {
-                  Enhanced repo read setup pending
-                }
-              </button>
-
-              <form (ngSubmit)="onSubmit()" class="grid gap-3 sm:grid-cols-[1fr_auto]">
-                <div class="relative group">
-                  <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
-                    <mat-icon>code</mat-icon>
-                  </div>
-                  <input
-                    type="text"
-                    name="username"
-                    [ngModel]="username()"
-                    (ngModelChange)="username.set($event)"
-                    placeholder="GitHub username"
-                    required
-                    autocomplete="off"
-                    class="h-12 w-full rounded-lg border border-slate-700/70 bg-slate-900/80 py-3 pl-12 pr-4 font-mono text-slate-100 placeholder:text-slate-600 shadow-inner transition-all focus:border-indigo-500/50 focus:outline-none focus:ring-1 focus:ring-indigo-500/50"
-                  >
-                </div>
-
-                <button
-                  type="submit"
-                  [disabled]="!username() || isLoading"
-                  class="group relative flex h-12 items-center justify-center gap-2 overflow-hidden rounded-lg border border-cyan-400/30 bg-cyan-500/10 px-5 font-bold uppercase tracking-widest text-cyan-200 transition-all hover:border-cyan-300 hover:bg-cyan-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/10 to-cyan-500/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-                  @if (isLoading) {
-                    <mat-icon class="animate-spin relative z-10 w-[20px] h-[20px] text-[20px]">sync</mat-icon>
-                    <span class="relative z-10">Syncing</span>
-                  } @else {
-                    <mat-icon class="relative z-10 w-[20px] h-[20px] text-[20px]">search</mat-icon>
-                    <span class="relative z-10">Lookup</span>
-                  }
-                </button>
-              </form>
               @if (errorMsg) {
                 <p class="mt-4 flex items-center gap-1 text-sm font-mono text-red-400">
                   <mat-icon class="text-[16px] w-[16px] h-[16px]">error_outline</mat-icon>
