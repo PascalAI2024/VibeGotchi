@@ -59,7 +59,7 @@ import { PetState } from '../models';
               <div class="mb-4 flex items-start justify-between gap-3">
                 <div>
                   <div class="text-[10px] font-mono uppercase tracking-wider text-lime-300/70">Choose scoring mode</div>
-                  <div class="text-sm text-slate-400">Fastest demo: try the sample username, then tap Elder below for the full scored dashboard.</div>
+                  <div class="text-sm text-slate-400">Fastest demo: score Linus or another preset, then tap Elder below for the full dashboard.</div>
                 </div>
                 <mat-icon class="shrink-0 text-lime-300">route</mat-icon>
               </div>
@@ -109,14 +109,18 @@ import { PetState } from '../models';
                     }
                   </button>
                 </form>
-                <button
-                  type="button"
-                  (click)="useSampleUsername()"
-                  class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-cyan-300/25 bg-slate-950/50 px-3 py-2 text-xs font-bold uppercase tracking-widest text-cyan-100 transition-all hover:border-cyan-300/60 hover:bg-cyan-500/15 min-[480px]:w-auto"
-                >
-                  <mat-icon class="text-[16px] h-[16px] w-[16px]">bolt</mat-icon>
-                  Try PascalAI2024
-                </button>
+                <div class="mt-3 grid grid-cols-1 gap-2 min-[480px]:grid-cols-2">
+                  @for (preset of presetUsers; track preset.username) {
+                    <button
+                      type="button"
+                      (click)="usePresetUsername(preset.username)"
+                      class="inline-flex min-w-0 items-center justify-center gap-2 rounded-lg border border-cyan-300/25 bg-slate-950/50 px-3 py-2 text-xs font-bold uppercase tracking-widest text-cyan-100 transition-all hover:border-cyan-300/60 hover:bg-cyan-500/15"
+                    >
+                      <mat-icon class="shrink-0 text-[16px] h-[16px] w-[16px]">{{preset.icon}}</mat-icon>
+                      <span class="truncate">{{preset.label}}</span>
+                    </button>
+                  }
+                </div>
               </div>
 
               <div class="grid gap-3 sm:grid-cols-2">
@@ -330,9 +334,15 @@ import { PetState } from '../models';
   `]
 })
 export class LandingComponent implements OnInit, OnDestroy {
-  username = signal('');
+  username = signal('torvalds');
   authApiBaseUrl = signal<string | null | undefined>(undefined);
   enhancedAuthAvailable = signal<boolean | undefined>(undefined);
+  readonly presetUsers = [
+    { label: 'Linus', username: 'torvalds', icon: 'terminal' },
+    { label: 'Sindre', username: 'sindresorhus', icon: 'auto_awesome' },
+    { label: 'Dan', username: 'gaearon', icon: 'psychology' },
+    { label: 'Evan', username: 'yyx990803', icon: 'data_object' },
+  ];
   readonly featureItems = [
     {
       name: 'Five evolution stages',
@@ -568,8 +578,8 @@ export class LandingComponent implements OnInit, OnDestroy {
     }
   }
 
-  useSampleUsername() {
-    this.username.set('PascalAI2024');
+  usePresetUsername(username: string) {
+    this.username.set(username);
   }
 
   isAuthUnavailable() {
