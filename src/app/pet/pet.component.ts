@@ -397,7 +397,7 @@ import { animate } from 'motion';
     .pet-sprite-stage {
       --pet-glow: rgba(163, 230, 53, 0.24);
       --pet-orbit: rgba(217, 70, 239, 0.86);
-      --sprite-scale: 1;
+      --sprite-scale: 0.92;
       position: relative;
       width: 100%;
       height: 100%;
@@ -405,6 +405,7 @@ import { animate } from 'motion';
       place-items: center;
       isolation: isolate;
       overflow: visible;
+      padding: 2% 10% 3% 4%;
       transform-origin: 50% 82%;
       animation: sprite-stage-idle 4.4s ease-in-out infinite;
     }
@@ -453,11 +454,11 @@ import { animate } from 'motion';
     .pet-orbit-a { left: 18%; top: 30%; animation-delay: -0.4s; }
     .pet-orbit-b { right: 18%; top: 42%; animation-delay: -1.2s; }
     .pet-orbit-c { left: 48%; top: 13%; animation-delay: -2s; }
-    .pet-stage-egg { --sprite-scale: 0.98; --pet-glow: rgba(250, 204, 21, 0.2); --pet-orbit: rgba(250, 204, 21, 0.86); }
-    .pet-stage-baby { --sprite-scale: 1.04; --pet-glow: rgba(45, 212, 191, 0.22); --pet-orbit: rgba(45, 212, 191, 0.86); }
-    .pet-stage-teen { --sprite-scale: 1.04; --pet-glow: rgba(34, 211, 238, 0.22); --pet-orbit: rgba(34, 211, 238, 0.86); }
-    .pet-stage-adult { --sprite-scale: 1.05; --pet-glow: rgba(163, 230, 53, 0.18); --pet-orbit: rgba(163, 230, 53, 0.86); }
-    .pet-stage-elder { --sprite-scale: 1.05; --pet-glow: rgba(217, 70, 239, 0.2); --pet-orbit: rgba(217, 70, 239, 0.86); }
+    .pet-stage-egg { --sprite-scale: 0.94; --pet-glow: rgba(250, 204, 21, 0.2); --pet-orbit: rgba(250, 204, 21, 0.86); }
+    .pet-stage-baby { --sprite-scale: 0.98; --pet-glow: rgba(45, 212, 191, 0.22); --pet-orbit: rgba(45, 212, 191, 0.86); }
+    .pet-stage-teen { --sprite-scale: 0.98; --pet-glow: rgba(34, 211, 238, 0.22); --pet-orbit: rgba(34, 211, 238, 0.86); }
+    .pet-stage-adult { --sprite-scale: 0.99; --pet-glow: rgba(163, 230, 53, 0.18); --pet-orbit: rgba(163, 230, 53, 0.86); }
+    .pet-stage-elder { --sprite-scale: 0.99; --pet-glow: rgba(217, 70, 239, 0.2); --pet-orbit: rgba(217, 70, 239, 0.86); }
     .pet-sprite-stage.pet-sprite-happy {
       animation-duration: 3.4s;
     }

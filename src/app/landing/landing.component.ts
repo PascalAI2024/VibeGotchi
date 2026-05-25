@@ -198,7 +198,31 @@ import { PetState } from '../models';
           </div>
         </section>
 
-        <section class="w-full animate-fade-in-up pb-14" style="animation-delay: 300ms;">
+        <section class="w-full animate-fade-in-up pb-12" style="animation-delay: 280ms;">
+          <div class="mb-5 flex items-end justify-between gap-4 text-left">
+            <div>
+              <h2 class="text-lg font-bold text-slate-100 md:text-xl">Feature map</h2>
+              <p class="max-w-3xl text-sm font-mono text-slate-500">The full shipped surface: scoring, privacy boundaries, badges, demo paths, and the final share artifact.</p>
+            </div>
+            <mat-icon class="hidden text-fuchsia-300 sm:block">checklist</mat-icon>
+          </div>
+
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            @for (item of featureItems; track item.name) {
+              <div class="flex min-w-0 items-start gap-3 rounded-lg border border-slate-800 bg-slate-900/65 p-3 shadow-lg">
+                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-slate-700/70 bg-slate-950/70">
+                  <mat-icon class="text-[18px] h-[18px] w-[18px]" [class.text-lime-300]="item.tone === 'lime'" [class.text-cyan-300]="item.tone === 'cyan'" [class.text-fuchsia-300]="item.tone === 'fuchsia'" [class.text-amber-300]="item.tone === 'amber'">{{item.icon}}</mat-icon>
+                </span>
+                <span class="min-w-0">
+                  <span class="block text-sm font-bold leading-tight text-slate-100">{{item.name}}</span>
+                  <span class="mt-1 block text-xs leading-5 text-slate-500">{{item.detail}}</span>
+                </span>
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="w-full animate-fade-in-up pb-14" style="animation-delay: 340ms;">
           <div class="mb-5 flex items-end justify-between gap-4 text-left">
             <div>
               <h2 class="text-lg font-bold text-slate-100 md:text-xl">Built with</h2>
@@ -259,6 +283,68 @@ export class LandingComponent implements OnInit, OnDestroy {
   username = signal('');
   authApiBaseUrl = signal<string | null | undefined>(undefined);
   enhancedAuthAvailable = signal<boolean | undefined>(undefined);
+  readonly featureItems = [
+    {
+      name: 'Five evolution stages',
+      detail: 'Egg, Baby, Teen, Adult, and Elder previews with animated sprites.',
+      icon: 'pets',
+      tone: 'lime',
+    },
+    {
+      name: 'Read-only GitHub login',
+      detail: 'Contribution-history scoring without classic repo scope or write access.',
+      icon: 'verified_user',
+      tone: 'cyan',
+    },
+    {
+      name: 'Public lookup',
+      detail: 'Username scoring works without login from recent public GitHub events.',
+      icon: 'search',
+      tone: 'cyan',
+    },
+    {
+      name: 'Tech badges',
+      detail: 'Ranks visible repo languages and mapped package/framework signals.',
+      icon: 'workspace_premium',
+      tone: 'amber',
+    },
+    {
+      name: 'GitHub App mode',
+      detail: 'Optional selected-repo read mode for private/company badge signals.',
+      icon: 'admin_panel_settings',
+      tone: 'fuchsia',
+    },
+    {
+      name: 'Private activity signal',
+      detail: 'Counts restricted contribution totals without exposing private repo names.',
+      icon: 'domain_verification',
+      tone: 'fuchsia',
+    },
+    {
+      name: 'Simple Icons logos',
+      detail: 'Mapped tech badges use official-style SVG logos with text fallback.',
+      icon: 'category',
+      tone: 'lime',
+    },
+    {
+      name: 'Achievements',
+      detail: 'Rewards streaks, polyglot work, specialist lanes, and milestones.',
+      icon: 'military_tech',
+      tone: 'amber',
+    },
+    {
+      name: 'XP breakdown',
+      detail: 'Shows exactly why a profile reached its level and score.',
+      icon: 'query_stats',
+      tone: 'cyan',
+    },
+    {
+      name: 'Share card',
+      detail: 'Exports a polished GitHub-style PNG card from the dashboard.',
+      icon: 'ios_share',
+      tone: 'lime',
+    },
+  ];
   readonly stackItems = [
     {
       name: 'Angular',
