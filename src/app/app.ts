@@ -175,6 +175,7 @@ export class App {
       
       this.currentUser.set(user);
       this.currentState.set(state);
+      this.scrollToTop();
     } catch (e) {
       console.error(e);
       this.errorMsg.set('An error occurred while connecting. Please try again.');
@@ -207,6 +208,7 @@ export class App {
       
       this.currentUser.set(user);
       this.currentState.set(state);
+      this.scrollToTop();
     } catch (e) {
       console.error(e);
       this.errorMsg.set('An error occurred during authentication. Please try again.');
@@ -242,6 +244,7 @@ export class App {
         ...state,
         activitySource: 'Enhanced read-only GitHub App repo access',
       });
+      this.scrollToTop();
     } catch (e) {
       console.error(e);
       this.errorMsg.set('Enhanced repo read failed. Install the GitHub App on selected repos, then try again.');
@@ -260,11 +263,23 @@ export class App {
       public_repos: 42
     });
     this.currentState.set(state);
+    this.scrollToTop();
   }
 
   reset() {
     this.currentUser.set(null);
     this.currentState.set(null);
+    this.scrollToTop();
+  }
+
+  private scrollToTop() {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    });
   }
 
   private demoTechBadges(entries: [string, number][]): TechBadge[] {
