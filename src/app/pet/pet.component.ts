@@ -825,7 +825,7 @@ export class PetComponent implements AfterViewInit, OnChanges {
   currentPosture: PetState['posture'] = 'Stand';
 
   get spriteUrl() {
-    return `assets/pets/vibegotchi-${this.state.stage.toLowerCase()}.png`;
+    return `assets/pets/vibegotchi-${this.state.stage.toLowerCase()}.png?v=20260525b`;
   }
 
   ngAfterViewInit() {
