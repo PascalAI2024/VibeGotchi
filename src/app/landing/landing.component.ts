@@ -59,9 +59,14 @@ import { PetState } from '../models';
               <div class="mb-4 flex items-start justify-between gap-3">
                 <div>
                   <div class="text-[10px] font-mono uppercase tracking-wider text-lime-300/70">Choose scoring mode</div>
-                  <div class="text-sm text-slate-400">Start with a username. Connect GitHub only when you want deeper contribution data.</div>
+                  <div class="text-sm text-slate-400">Fastest demo: try the sample username, then tap Elder below for the full scored dashboard.</div>
                 </div>
                 <mat-icon class="shrink-0 text-lime-300">route</mat-icon>
+              </div>
+
+              <div class="mb-3 flex items-start gap-2 rounded-lg border border-emerald-400/20 bg-emerald-400/10 p-3 text-xs leading-5 text-emerald-100">
+                <mat-icon class="mt-0.5 shrink-0 text-[16px] h-[16px] w-[16px] text-emerald-300">shield</mat-icon>
+                <span>No writes. No classic repo scope. Optional GitHub App access only reads selected repositories.</span>
               </div>
 
               <div class="mb-3 rounded-lg border border-cyan-400/30 bg-cyan-500/10 p-3">
@@ -104,6 +109,14 @@ import { PetState } from '../models';
                     }
                   </button>
                 </form>
+                <button
+                  type="button"
+                  (click)="useSampleUsername()"
+                  class="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-cyan-300/25 bg-slate-950/50 px-3 py-2 text-xs font-bold uppercase tracking-widest text-cyan-100 transition-all hover:border-cyan-300/60 hover:bg-cyan-500/15 min-[480px]:w-auto"
+                >
+                  <mat-icon class="text-[16px] h-[16px] w-[16px]">bolt</mat-icon>
+                  Try PascalAI2024
+                </button>
               </div>
 
               <div class="grid gap-3 sm:grid-cols-2">
@@ -553,6 +566,10 @@ export class LandingComponent implements OnInit, OnDestroy {
     if (this.username().trim()) {
       this.connect.emit(this.username().trim());
     }
+  }
+
+  useSampleUsername() {
+    this.username.set('PascalAI2024');
   }
 
   isAuthUnavailable() {
