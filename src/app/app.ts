@@ -312,10 +312,11 @@ export class App {
     return slugMap[tech] || null;
   }
 
-  private demoState(state: Omit<PetState, 'achievements' | 'scoreBreakdown' | 'personalityLine'>): PetState {
+  private demoState(state: Omit<PetState, 'achievements' | 'careState' | 'scoreBreakdown' | 'personalityLine'>): PetState {
     const badgeXp = state.techBadges.reduce((sum, badge) => sum + badge.level * 25, 0);
     return this.engine.enrichState({
       ...state,
+      careState: this.getDemoCareState(state.daysSinceLastCommit),
       achievements: [],
       personalityLine: '',
       scoreBreakdown: [
@@ -323,5 +324,12 @@ export class App {
         { label: 'Tech badges', value: badgeXp },
       ],
     });
+  }
+
+  private getDemoCareState(daysSinceLastCommit: number): PetState['careState'] {
+    if (daysSinceLastCommit === 0) return 'Thriving';
+    if (daysSinceLastCommit <= 3) return 'Active';
+    if (daysSinceLastCommit <= 14) return 'Resting';
+    return 'Neglected';
   }
 }

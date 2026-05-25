@@ -61,6 +61,7 @@ export interface PetState {
   stage: 'Egg' | 'Baby' | 'Teen' | 'Adult' | 'Elder';
   health: number; // 0-100
   mood: 'Ecstatic' | 'Happy' | 'Neutral' | 'Sad' | 'Dead';
+  careState: 'Thriving' | 'Active' | 'Resting' | 'Neglected';
   posture: 'Stand' | 'Sit' | 'LayDown';
   level: number;
   xp: number;

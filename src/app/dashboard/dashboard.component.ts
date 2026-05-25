@@ -95,6 +95,20 @@ import { MatIconModule } from '@angular/material/icon';
               Lvl {{state.level}} {{state.stage}}
             </h3>
             <div class="text-slate-400 text-xs mt-1">{{state.mood}}</div>
+            <div
+              class="mt-2 inline-flex items-center justify-center gap-1 rounded-full border px-3 py-1 text-[10px] font-mono uppercase tracking-wider"
+              [class.border-emerald-400]="state.careState === 'Thriving'"
+              [class.text-emerald-300]="state.careState === 'Thriving'"
+              [class.border-cyan-400]="state.careState === 'Active'"
+              [class.text-cyan-300]="state.careState === 'Active'"
+              [class.border-amber-400]="state.careState === 'Resting'"
+              [class.text-amber-300]="state.careState === 'Resting'"
+              [class.border-red-400]="state.careState === 'Neglected'"
+              [class.text-red-300]="state.careState === 'Neglected'"
+            >
+              <mat-icon class="text-[14px] w-[14px] h-[14px]">{{careIcon()}}</mat-icon>
+              {{state.careState}}
+            </div>
           </div>
 
           <app-pet [state]="state"></app-pet>
@@ -125,6 +139,7 @@ import { MatIconModule } from '@angular/material/icon';
                    [class.text-amber-400]="state.health > 30 && state.health <= 70"
                    [class.text-red-500]="state.health <= 30">{{state.health}}%</div>
             </div>
+            <div class="mt-2 text-xs text-slate-500">{{careDescription()}}</div>
           </div>
           
           <div class="bg-slate-800/50 border border-slate-700/50 backdrop-blur-md rounded-2xl p-5 shadow-sm flex flex-col justify-between">
@@ -285,7 +300,7 @@ export class DashboardComponent {
     ctx.fillStyle = '#cbd5e1';
     ctx.font = '28px monospace';
     ctx.fillText(`@${this.user.login}`, 70, 225);
-    ctx.fillText(`${this.state.mood} · ${this.state.health}% vitality · ${this.state.commitStreak} day streak`, 70, 270);
+    ctx.fillText(`${this.state.careState} · ${this.state.health}% vitality · ${this.state.commitStreak} day streak`, 70, 270);
 
     ctx.fillStyle = '#e2e8f0';
     ctx.font = '24px monospace';
@@ -333,5 +348,19 @@ export class DashboardComponent {
       }
     }
     ctx.fillText(line, x, y);
+  }
+
+  careIcon() {
+    if (this.state.careState === 'Thriving') return 'restaurant';
+    if (this.state.careState === 'Active') return 'bolt';
+    if (this.state.careState === 'Resting') return 'bedtime';
+    return 'sentiment_dissatisfied';
+  }
+
+  careDescription() {
+    if (this.state.careState === 'Thriving') return 'Fed by activity today.';
+    if (this.state.careState === 'Active') return 'Recently active and healthy.';
+    if (this.state.careState === 'Resting') return 'Quiet for a bit, but not abandoned.';
+    return 'Needs a push soon. Possibly dramatic.';
   }
 }

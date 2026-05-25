@@ -16,8 +16,9 @@ export class PetEngineService {
   private createDefaultState(): PetState {
     return {
       stage: 'Egg',
-      health: 100,
-      mood: 'Neutral',
+      health: 20,
+      mood: 'Sad',
+      careState: 'Neglected',
       level: 1,
       xp: 0,
       xpToNextLevel: 100,
@@ -31,7 +32,7 @@ export class PetEngineService {
       techBadges: [],
       achievements: [],
       scoreBreakdown: [],
-      personalityLine: 'Awaiting signs of life from the commit mines.'
+      personalityLine: 'Neglected. Awaiting signs of life from the commit mines.'
     };
   }
   
@@ -115,7 +116,9 @@ export class PetEngineService {
     const streakXp = streak * 50;
     const techBadges = this.calculateTechBadges(repos);
     const badgeXp = techBadges.reduce((sum, badge) => sum + badge.level * 25, 0);
-    const xp = pushXp + streakXp + badgeXp;
+    const careState = this.getCareState(daysSinceLast);
+    const freshnessXp = this.getFreshnessXp(careState);
+    const xp = pushXp + streakXp + badgeXp + freshnessXp;
     const level = Math.floor(Math.sqrt(xp / 20)) + 1;
     const xpToNextLevel = Math.pow(level, 2) * 20;
 
@@ -133,7 +136,8 @@ export class PetEngineService {
 
     // Mood
     let mood: PetState['mood'] = 'Neutral';
-    if (health === 0) mood = 'Dead';
+    if (careState === 'Neglected') mood = 'Sad';
+    else if (health === 0) mood = 'Dead';
     else if (health < 40) mood = 'Sad';
     else if (streak > 2) mood = 'Ecstatic';
     else if (health > 70) mood = 'Happy';
@@ -142,6 +146,7 @@ export class PetEngineService {
       stage,
       health,
       mood,
+      careState,
       posture: 'Stand',
       level,
       xp,
@@ -158,6 +163,7 @@ export class PetEngineService {
         { label: 'Recent pushes', value: pushXp },
         { label: 'Active streak', value: streakXp },
         { label: 'Tech badges', value: badgeXp },
+        { label: 'Freshness', value: freshnessXp },
       ],
     });
   }
@@ -205,7 +211,9 @@ export class PetEngineService {
     const streakXp = streak * 50;
     const techBadges = this.calculateTechBadges(repos);
     const badgeXp = techBadges.reduce((sum, badge) => sum + badge.level * 25, 0);
-    const xp = contributionXp + commitXp + streakXp + badgeXp;
+    const careState = this.getCareState(daysSinceLast);
+    const freshnessXp = this.getFreshnessXp(careState);
+    const xp = contributionXp + commitXp + streakXp + badgeXp + freshnessXp;
     const level = Math.max(1, Math.floor(Math.sqrt(xp / 35)) + 1);
     const xpToNextLevel = Math.pow(level, 2) * 35;
     let health = Math.max(0, 100 - daysSinceLast * 12);
@@ -218,7 +226,8 @@ export class PetEngineService {
     else if (level >= 2) stage = 'Baby';
 
     let mood: PetState['mood'] = 'Neutral';
-    if (health === 0) mood = 'Dead';
+    if (careState === 'Neglected') mood = 'Sad';
+    else if (health === 0) mood = 'Dead';
     else if (health < 40) mood = 'Sad';
     else if (streak > 2 || summary.totalContributions >= 100) mood = 'Ecstatic';
     else if (health > 70) mood = 'Happy';
@@ -227,6 +236,7 @@ export class PetEngineService {
       stage,
       health,
       mood,
+      careState,
       posture: 'Stand',
       level,
       xp,
@@ -246,6 +256,7 @@ export class PetEngineService {
         { label: 'Commit contributions', value: commitXp },
         { label: 'Active streak', value: streakXp },
         { label: 'Tech badges', value: badgeXp },
+        { label: 'Freshness', value: freshnessXp },
       ],
     });
   }
@@ -374,6 +385,22 @@ export class PetEngineService {
       });
     }
 
+    if (state.careState === 'Thriving') {
+      achievements.push({
+        name: 'Freshly Fed',
+        description: 'Activity landed today. The pet is insufferably pleased.',
+        icon: 'restaurant',
+      });
+    }
+
+    if (state.careState === 'Neglected') {
+      achievements.push({
+        name: 'Needs Attention',
+        description: 'No recent push signal. The pet has begun judging silently.',
+        icon: 'sentiment_dissatisfied',
+      });
+    }
+
     if (state.commitStreak >= 7) {
       achievements.push({
         name: 'Streak Keeper',
@@ -410,6 +437,9 @@ export class PetEngineService {
   }
 
   private getPersonalityLine(state: PetState): string {
+    if (state.careState === 'Neglected') return 'Neglected. No recent push signal, and the pet has noticed.';
+    if (state.careState === 'Resting') return 'Resting. Not abandoned, but definitely eyeing the commit log.';
+    if (state.careState === 'Thriving') return 'Freshly fed by recent activity. The pet is dangerously smug.';
     if (state.health === 0) return 'The pet is not angry. Just disappointed. Terminally.';
     if (state.level >= 10) return 'Ancient commit energy detected. Slightly terrifying, mostly useful.';
     if (state.commitStreak >= 7) return 'A proper streak. The pet has stopped drafting resignation letters.';
@@ -419,5 +449,19 @@ export class PetEngineService {
     if (state.mood === 'Ecstatic') return 'Suspiciously productive. Continue before someone schedules a meeting.';
     if (state.mood === 'Happy') return 'Healthy commit pulse. The pet approves, quietly.';
     return 'Stable, but not exactly setting the leaderboard on fire.';
+  }
+
+  private getCareState(daysSinceLastCommit: number): PetState['careState'] {
+    if (daysSinceLastCommit === 0) return 'Thriving';
+    if (daysSinceLastCommit <= 3) return 'Active';
+    if (daysSinceLastCommit <= 14) return 'Resting';
+    return 'Neglected';
+  }
+
+  private getFreshnessXp(careState: PetState['careState']): number {
+    if (careState === 'Thriving') return 150;
+    if (careState === 'Active') return 90;
+    if (careState === 'Resting') return 25;
+    return 0;
   }
 }

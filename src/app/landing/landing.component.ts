@@ -243,7 +243,7 @@ import { PetState } from '../models';
                 <div class="mt-2 flex items-center justify-between gap-2">
                   <div>
                     <div class="text-sm font-bold text-slate-100">{{demoState.stage}}</div>
-                    <div class="text-xs font-mono text-slate-500">Lvl {{demoState.level}} · {{demoState.mood}}</div>
+                    <div class="text-xs font-mono text-slate-500">Lvl {{demoState.level}} · {{demoState.careState}}</div>
                   </div>
                   <mat-icon class="text-[18px] w-[18px] h-[18px] text-slate-500 group-hover:text-lime-300">play_arrow</mat-icon>
                 </div>
