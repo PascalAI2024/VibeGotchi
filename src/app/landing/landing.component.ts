@@ -181,8 +181,8 @@ import { PetState } from '../models';
                 [class.border-lime-400]="demoState.stage === 'Elder'"
                 [class.bg-lime-400/10]="demoState.stage === 'Elder'"
               >
-                <div class="h-28 flex items-center justify-center overflow-hidden rounded-md bg-slate-950/40">
-                  <div class="w-40 transition-transform group-hover:scale-105">
+                <div class="h-40 flex items-center justify-center overflow-visible rounded-md bg-slate-950/40 sm:h-44">
+                  <div class="w-36 transition-transform group-hover:scale-105 sm:w-40">
                     <app-pet [state]="demoState" [interactive]="false"></app-pet>
                   </div>
                 </div>

@@ -31,17 +31,31 @@ import { animate } from 'motion';
             <text x="50" y="70" font-size="6" font-family="monospace" text-anchor="middle" fill="white">0 commits</text>
           </svg>
         } @else if (useSpriteArt) {
-          <img
-            [src]="spriteUrl"
-            [alt]="state.stage + ' VibeGotchi sprite'"
-            class="pet-sprite h-full w-full object-contain drop-shadow-2xl"
+          <div
+            class="pet-sprite-stage"
+            [class.pet-stage-egg]="state.stage === 'Egg'"
+            [class.pet-stage-baby]="state.stage === 'Baby'"
+            [class.pet-stage-teen]="state.stage === 'Teen'"
+            [class.pet-stage-adult]="state.stage === 'Adult'"
+            [class.pet-stage-elder]="state.stage === 'Elder'"
             [class.pet-sprite-ecstatic]="state.mood === 'Ecstatic'"
             [class.pet-sprite-happy]="state.mood === 'Happy'"
             [class.pet-sprite-neutral]="state.mood === 'Neutral'"
             [class.pet-sprite-sad]="state.mood === 'Sad'"
             [class.pet-sprite-sit]="currentPosture === 'Sit'"
             [class.pet-sprite-lay]="currentPosture === 'LayDown'"
-          />
+          >
+            <div class="pet-sprite-aura"></div>
+            <div class="pet-sprite-shadow"></div>
+            <img
+              [src]="spriteUrl"
+              [alt]="state.stage + ' VibeGotchi sprite'"
+              class="pet-sprite h-full w-full object-contain drop-shadow-2xl"
+            />
+            <span class="pet-orbit pet-orbit-a"></span>
+            <span class="pet-orbit pet-orbit-b"></span>
+            <span class="pet-orbit pet-orbit-c"></span>
+          </div>
         } @else {
           
           <!-- LIVING STATES -->
@@ -380,22 +394,93 @@ import { animate } from 'motion';
   styles: [`
     /* Universal */
     .glow { filter: drop-shadow(0 0 3px currentColor); }
+    .pet-sprite-stage {
+      --pet-glow: rgba(163, 230, 53, 0.24);
+      --pet-orbit: rgba(217, 70, 239, 0.86);
+      --sprite-scale: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      isolation: isolate;
+      overflow: visible;
+      transform-origin: 50% 82%;
+      animation: sprite-stage-idle 4.4s ease-in-out infinite;
+    }
     .pet-sprite {
+      position: relative;
+      z-index: 2;
       animation: sprite-idle 3.8s ease-in-out infinite alternate;
       filter: saturate(1.08) drop-shadow(0 0 20px rgba(163, 230, 53, 0.18));
       transform-origin: 50% 82%;
+      will-change: transform, filter;
     }
-    .pet-sprite-ecstatic {
+    .pet-sprite-aura {
+      position: absolute;
+      inset: 8%;
+      z-index: 0;
+      border-radius: 999px;
+      background:
+        radial-gradient(circle at 50% 42%, var(--pet-glow), transparent 58%),
+        conic-gradient(from 90deg, transparent, rgba(34, 211, 238, 0.18), transparent, rgba(217, 70, 239, 0.18), transparent);
+      filter: blur(14px);
+      opacity: 0.78;
+      animation: sprite-aura 5.5s linear infinite;
+    }
+    .pet-sprite-shadow {
+      position: absolute;
+      left: 22%;
+      right: 22%;
+      bottom: 9%;
+      z-index: 1;
+      height: 8%;
+      border-radius: 999px;
+      background: radial-gradient(ellipse, rgba(2, 6, 23, 0.62), rgba(2, 6, 23, 0));
+      animation: sprite-shadow 3.8s ease-in-out infinite alternate;
+    }
+    .pet-orbit {
+      position: absolute;
+      z-index: 3;
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--pet-orbit);
+      box-shadow: 0 0 14px var(--pet-orbit);
+      opacity: 0.72;
+      animation: sprite-orbit 3.6s ease-in-out infinite;
+    }
+    .pet-orbit-a { left: 18%; top: 30%; animation-delay: -0.4s; }
+    .pet-orbit-b { right: 18%; top: 42%; animation-delay: -1.2s; }
+    .pet-orbit-c { left: 48%; top: 13%; animation-delay: -2s; }
+    .pet-stage-egg { --sprite-scale: 0.98; --pet-glow: rgba(250, 204, 21, 0.2); --pet-orbit: rgba(250, 204, 21, 0.86); }
+    .pet-stage-baby { --sprite-scale: 1.04; --pet-glow: rgba(45, 212, 191, 0.22); --pet-orbit: rgba(45, 212, 191, 0.86); }
+    .pet-stage-teen { --sprite-scale: 1.04; --pet-glow: rgba(34, 211, 238, 0.22); --pet-orbit: rgba(34, 211, 238, 0.86); }
+    .pet-stage-adult { --sprite-scale: 1.05; --pet-glow: rgba(163, 230, 53, 0.18); --pet-orbit: rgba(163, 230, 53, 0.86); }
+    .pet-stage-elder { --sprite-scale: 1.05; --pet-glow: rgba(217, 70, 239, 0.2); --pet-orbit: rgba(217, 70, 239, 0.86); }
+    .pet-sprite-stage.pet-sprite-happy {
+      animation-duration: 3.4s;
+    }
+    .pet-sprite-stage.pet-sprite-ecstatic {
+      animation: sprite-stage-excited 0.72s ease-in-out infinite alternate;
+      --pet-glow: rgba(163, 230, 53, 0.38);
+    }
+    .pet-sprite-stage.pet-sprite-sad {
+      animation: sprite-stage-sad 4s ease-in-out infinite alternate;
+      --pet-glow: rgba(129, 140, 248, 0.2);
+      --pet-orbit: rgba(129, 140, 248, 0.74);
+    }
+    .pet-sprite-ecstatic .pet-sprite {
       animation: sprite-hop 0.7s ease-in-out infinite alternate;
       filter: saturate(1.22) drop-shadow(0 0 24px rgba(163, 230, 53, 0.34));
     }
-    .pet-sprite-happy {
+    .pet-sprite-happy .pet-sprite {
       animation-duration: 2.5s;
     }
-    .pet-sprite-neutral {
+    .pet-sprite-neutral .pet-sprite {
       filter: saturate(1.02) drop-shadow(0 0 16px rgba(34, 211, 238, 0.14));
     }
-    .pet-sprite-sad {
+    .pet-sprite-sad .pet-sprite {
       animation: sprite-sad 3.2s ease-in-out infinite alternate;
       filter: saturate(0.72) drop-shadow(0 0 14px rgba(129, 140, 248, 0.16));
     }
@@ -405,17 +490,51 @@ import { animate } from 'motion';
     .pet-sprite-lay {
       transform: translateY(12%) rotate(-8deg) scale(0.9);
     }
+    .pet-sprite-stage.pet-sprite-sad .pet-orbit { opacity: 0.32; }
+    .pet-sprite-stage.pet-sprite-neutral .pet-orbit { opacity: 0.48; }
+    .pet-sprite-stage.pet-sprite-ecstatic .pet-orbit {
+      width: 9px;
+      height: 9px;
+      animation-duration: 1.4s;
+    }
+    @keyframes sprite-stage-idle {
+      0%, 100% { transform: translateY(0) rotate(-0.6deg); }
+      50% { transform: translateY(-2.5%) rotate(0.6deg); }
+    }
+    @keyframes sprite-stage-excited {
+      0% { transform: translateY(0) rotate(-1deg) scale(1); }
+      100% { transform: translateY(-4%) rotate(1deg) scale(1.02); }
+    }
+    @keyframes sprite-stage-sad {
+      0% { transform: translateY(2%) rotate(-0.5deg); }
+      100% { transform: translateY(4%) rotate(0.5deg); }
+    }
     @keyframes sprite-idle {
-      0% { transform: translateY(0) rotate(-0.8deg) scale(1); }
-      100% { transform: translateY(-3%) rotate(0.8deg) scale(1.015); }
+      0% { transform: translateY(0) rotate(-0.8deg) scale(var(--sprite-scale)); }
+      100% { transform: translateY(-3%) rotate(0.8deg) scale(calc(var(--sprite-scale) * 1.015)); }
     }
     @keyframes sprite-hop {
-      0% { transform: translateY(0) rotate(-1deg) scale(1); }
-      100% { transform: translateY(-7%) rotate(1deg) scale(1.035); }
+      0% { transform: translateY(0) rotate(-1deg) scale(var(--sprite-scale)); }
+      100% { transform: translateY(-7%) rotate(1deg) scale(calc(var(--sprite-scale) * 1.035)); }
     }
     @keyframes sprite-sad {
-      0% { transform: translateY(4%) rotate(-1deg) scale(0.96); }
-      100% { transform: translateY(6%) rotate(1deg) scale(0.94); }
+      0% { transform: translateY(4%) rotate(-1deg) scale(calc(var(--sprite-scale) * 0.96)); }
+      100% { transform: translateY(6%) rotate(1deg) scale(calc(var(--sprite-scale) * 0.94)); }
+    }
+    @keyframes sprite-aura {
+      0% { transform: rotate(0deg) scale(0.96); opacity: 0.6; }
+      50% { transform: rotate(180deg) scale(1.04); opacity: 0.84; }
+      100% { transform: rotate(360deg) scale(0.96); opacity: 0.6; }
+    }
+    @keyframes sprite-shadow {
+      0% { transform: scaleX(1); opacity: 0.52; }
+      100% { transform: scaleX(0.78); opacity: 0.28; }
+    }
+    @keyframes sprite-orbit {
+      0%, 100% { transform: translate3d(0, 8px, 0) scale(0.72); opacity: 0; }
+      25% { opacity: 0.72; }
+      50% { transform: translate3d(8px, -8px, 0) scale(1); opacity: 0.95; }
+      75% { opacity: 0.48; }
     }
     
     @keyframes blink {
