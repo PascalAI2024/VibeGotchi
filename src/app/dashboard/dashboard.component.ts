@@ -112,16 +112,49 @@ import { MatIconModule } from '@angular/material/icon';
           </div>
 
           <app-pet [state]="state"></app-pet>
+
+          @if (interactionMessage) {
+            <div class="mt-3 rounded-full border border-lime-400/30 bg-lime-400/10 px-4 py-2 text-center text-xs font-mono uppercase tracking-wider text-lime-200 shadow-[0_0_24px_rgba(163,230,53,0.16)]">
+              {{interactionMessage}}
+            </div>
+          }
+
+          <div class="mt-4 grid w-full max-w-xs grid-cols-3 gap-2">
+            <button
+              type="button"
+              (click)="interact('feed')"
+              class="inline-flex min-w-0 items-center justify-center gap-1 rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-2 py-2 text-[11px] font-bold uppercase tracking-wider text-emerald-200 transition-all hover:border-emerald-300 hover:bg-emerald-400/20"
+            >
+              <mat-icon class="text-[16px] h-[16px] w-[16px]">restaurant</mat-icon>
+              Feed
+            </button>
+            <button
+              type="button"
+              (click)="interact('pet')"
+              class="inline-flex min-w-0 items-center justify-center gap-1 rounded-lg border border-fuchsia-400/30 bg-fuchsia-400/10 px-2 py-2 text-[11px] font-bold uppercase tracking-wider text-fuchsia-200 transition-all hover:border-fuchsia-300 hover:bg-fuchsia-400/20"
+            >
+              <mat-icon class="text-[16px] h-[16px] w-[16px]">front_hand</mat-icon>
+              Pet
+            </button>
+            <button
+              type="button"
+              (click)="interact('play')"
+              class="inline-flex min-w-0 items-center justify-center gap-1 rounded-lg border border-cyan-400/30 bg-cyan-400/10 px-2 py-2 text-[11px] font-bold uppercase tracking-wider text-cyan-200 transition-all hover:border-cyan-300 hover:bg-cyan-400/20"
+            >
+              <mat-icon class="text-[16px] h-[16px] w-[16px]">sports_esports</mat-icon>
+              Play
+            </button>
+          </div>
           
           <!-- XP Bar -->
           <div class="w-48 mt-4">
             <div class="flex justify-between text-[10px] text-slate-500 font-mono mb-1 uppercase tracking-wider">
-              <span>XP {{state.xp}}</span>
+              <span>XP {{displayXp()}}</span>
               <span>Next {{state.xpToNextLevel}}</span>
             </div>
             <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
               <div class="h-full bg-indigo-500 transition-all duration-1000 ease-out" 
-                   [style.width.%]="(state.xp / state.xpToNextLevel) * 100"></div>
+                   [style.width.%]="xpPercent()"></div>
             </div>
           </div>
         </div>
@@ -135,9 +168,9 @@ import { MatIconModule } from '@angular/material/icon';
             </div>
             <div class="flex items-end gap-2">
               <div class="text-3xl font-mono font-bold" 
-                   [class.text-emerald-400]="state.health > 70"
-                   [class.text-amber-400]="state.health > 30 && state.health <= 70"
-                   [class.text-red-500]="state.health <= 30">{{state.health}}%</div>
+                   [class.text-emerald-400]="displayHealth() > 70"
+                   [class.text-amber-400]="displayHealth() > 30 && displayHealth() <= 70"
+                   [class.text-red-500]="displayHealth() <= 30">{{displayHealth()}}%</div>
             </div>
             <div class="mt-2 text-xs text-slate-500">{{careDescription()}}</div>
           </div>
@@ -269,6 +302,45 @@ export class DashboardComponent {
   @Input({required: true}) user!: GitHubUser;
   @Input({required: true}) state!: PetState;
   @Output() logout = new EventEmitter<void>();
+  interactionMessage = '';
+  private interactionHealthBoost = 0;
+  private interactionXpBoost = 0;
+  private interactionTimer: ReturnType<typeof setTimeout> | null = null;
+
+  interact(action: 'feed' | 'pet' | 'play') {
+    if (action === 'feed') {
+      this.interactionHealthBoost = Math.min(25, this.interactionHealthBoost + 10);
+      this.interactionXpBoost += 25;
+      this.interactionMessage = 'Fed: +10 vitality, +25 XP';
+    } else if (action === 'pet') {
+      this.interactionHealthBoost = Math.min(25, this.interactionHealthBoost + 5);
+      this.interactionXpBoost += 10;
+      this.interactionMessage = 'Petted: mood stabilized, +10 XP';
+    } else {
+      this.interactionXpBoost += 35;
+      this.interactionMessage = 'Played: +35 XP';
+    }
+
+    if (this.interactionTimer) {
+      clearTimeout(this.interactionTimer);
+    }
+    this.interactionTimer = setTimeout(() => {
+      this.interactionMessage = '';
+      this.interactionTimer = null;
+    }, 2200);
+  }
+
+  displayHealth() {
+    return Math.min(100, this.state.health + this.interactionHealthBoost);
+  }
+
+  displayXp() {
+    return this.state.xp + this.interactionXpBoost;
+  }
+
+  xpPercent() {
+    return Math.min(100, (this.displayXp() / this.state.xpToNextLevel) * 100);
+  }
 
   downloadShareCard() {
     const canvas = document.createElement('canvas');
@@ -300,7 +372,7 @@ export class DashboardComponent {
     ctx.fillStyle = '#cbd5e1';
     ctx.font = '28px monospace';
     ctx.fillText(`@${this.user.login}`, 70, 225);
-    ctx.fillText(`${this.state.careState} · ${this.state.health}% vitality · ${this.state.commitStreak} day streak`, 70, 270);
+    ctx.fillText(`${this.state.careState} · ${this.displayHealth()}% vitality · ${this.state.commitStreak} day streak`, 70, 270);
 
     ctx.fillStyle = '#e2e8f0';
     ctx.font = '24px monospace';

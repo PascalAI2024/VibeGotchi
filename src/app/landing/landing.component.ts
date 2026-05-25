@@ -399,6 +399,12 @@ export class LandingComponent implements OnInit, OnDestroy {
       tone: 'cyan',
     },
     {
+      name: 'Care interactions',
+      detail: 'Feed, pet, and play actions give immediate vitality and XP feedback.',
+      icon: 'front_hand',
+      tone: 'fuchsia',
+    },
+    {
       name: 'Share card',
       detail: 'Exports a polished GitHub-style PNG card from the dashboard.',
       icon: 'ios_share',
