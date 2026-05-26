@@ -11,259 +11,178 @@ import { PetState } from '../models';
   template: `
     <div class="min-h-screen w-full max-w-full overflow-x-hidden px-5 py-8 sm:px-6 lg:px-8 landing-shell">
       <div class="mx-auto flex w-full max-w-7xl flex-col gap-8">
-        <section class="flex w-full min-w-0 items-stretch gap-8 pt-8 lg:min-h-[calc(100vh-4rem)] lg:gap-10 lg:pt-16">
-          <div class="min-w-0 animate-fade-in-up text-left flex flex-col justify-between lg:w-8/12">
-            <div class="mb-4 grid max-w-full grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center">
-              <div class="inline-flex items-center gap-2 rounded-full border border-lime-400/40 bg-lime-400/10 px-3 py-1 text-[11px] font-mono uppercase tracking-wider text-lime-200 shadow-[0_0_24px_rgba(163,230,53,0.18)]">
-                <mat-icon class="text-[15px] w-[15px] h-[15px]">verified_user</mat-icon>
-                Read-only GitHub scoring
-              </div>
-              <a
-                href="https://github.com/PascalAI2024/VibeGotchi"
-                target="_blank"
-                rel="noreferrer"
-                class="inline-flex items-center gap-1 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-3 py-1 text-[11px] font-mono uppercase tracking-wider text-fuchsia-200 transition-colors hover:border-fuchsia-300 hover:text-white"
-              >
-                <mat-icon class="text-[14px] w-[14px] h-[14px]">code</mat-icon>
-                GitHub project
-              </a>
-            </div>
-
-            <h1 class="mb-4 max-w-xl text-5xl font-sans font-extrabold leading-[0.95] text-transparent bg-clip-text bg-gradient-to-br from-lime-300 via-emerald-300 to-fuchsia-400 drop-shadow-[0_0_18px_rgba(163,230,53,0.28)] sm:text-7xl lg:text-8xl">
-              VIBE GOTCHI
-            </h1>
-            <p class="max-w-xl text-base leading-7 text-slate-400 sm:text-lg">
-              A virtual pet that turns GitHub activity into evolution stages, tech badges, achievements, and a shareable score card.
-            </p>
-
-            <div class="mt-6 grid grid-cols-1 gap-2 min-[480px]:grid-cols-2 sm:grid-cols-4">
-              <div class="rounded-lg border border-lime-400/20 bg-slate-900/70 px-3 py-2 shadow-[inset_0_0_18px_rgba(163,230,53,0.05)]">
-                <div class="text-[10px] font-mono uppercase tracking-wider text-lime-300/70">Connect</div>
-                <div class="text-sm font-bold text-slate-100">GitHub</div>
-              </div>
-              <div class="rounded-lg border border-cyan-400/20 bg-slate-900/70 px-3 py-2 shadow-[inset_0_0_18px_rgba(34,211,238,0.05)]">
-                <div class="text-[10px] font-mono uppercase tracking-wider text-cyan-300/70">Score</div>
-                <div class="text-sm font-bold text-slate-100">Activity</div>
-              </div>
-              <div class="rounded-lg border border-fuchsia-400/20 bg-slate-900/70 px-3 py-2 shadow-[inset_0_0_18px_rgba(217,70,239,0.05)]">
-                <div class="text-[10px] font-mono uppercase tracking-wider text-fuchsia-300/70">Evolve</div>
-                <div class="text-sm font-bold text-slate-100">Pet</div>
-              </div>
-              <div class="rounded-lg border border-emerald-400/20 bg-slate-900/70 px-3 py-2 shadow-[inset_0_0_18px_rgba(52,211,153,0.05)]">
-                <div class="text-[10px] font-mono uppercase tracking-wider text-emerald-300/70">Share</div>
-                <div class="text-sm font-bold text-slate-100">Card</div>
-              </div>
-            </div>
-
-            <div class="mt-7 max-w-xl min-w-0 rounded-lg border border-lime-400/20 bg-slate-950/75 p-4 shadow-2xl shadow-black/30">
-              <div class="mb-4 flex items-start justify-between gap-3">
-                <div>
-                  <div class="text-[10px] font-mono uppercase tracking-wider text-lime-300/70">Choose scoring mode</div>
-                  <div class="text-sm text-slate-400">Fastest demo: score Linus or another preset, then tap Elder below for the full dashboard.</div>
-                </div>
-                <mat-icon class="shrink-0 text-lime-300">route</mat-icon>
-              </div>
-
-              <div class="mb-3 flex items-start gap-2 rounded-lg border border-emerald-400/20 bg-emerald-400/10 p-3 text-xs leading-5 text-emerald-100">
-                <mat-icon class="mt-0.5 shrink-0 text-[16px] h-[16px] w-[16px] text-emerald-300">shield</mat-icon>
-                <span>No writes. No classic repo scope. Optional GitHub App access only reads selected repositories.</span>
-              </div>
-
-              <div class="grid gap-3 min-[540px]:grid-cols-[1.12fr_0.88fr]">
-                <div class="rounded-lg border border-cyan-400/30 bg-cyan-500/10 p-3">
-                  <div class="mb-3 flex items-start gap-3">
-                    <span class="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-cyan-300 text-sm font-bold text-slate-950">1</span>
-                    <div>
-                      <div class="text-sm font-bold text-cyan-100">Public username lookup</div>
-                      <div class="text-xs leading-5 text-slate-400">No login. Scores recent public activity and visible public repositories.</div>
-                    </div>
-                  </div>
-                  <form (ngSubmit)="onSubmit()" class="grid gap-3">
-                    <div class="relative group">
-                      <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
-                        <mat-icon>code</mat-icon>
-                      </div>
-                      <input
-                        type="text"
-                        name="username"
-                        [ngModel]="username()"
-                        (ngModelChange)="username.set($event)"
-                        placeholder="GitHub username"
-                        required
-                        autocomplete="off"
-                        class="h-12 w-full rounded-lg border border-slate-700/70 bg-slate-900/80 py-3 pl-12 pr-4 font-mono text-slate-100 placeholder:text-slate-600 shadow-inner transition-all focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
-                      >
-                    </div>
-
-                    <button
-                      type="submit"
-                      [disabled]="!username() || isLoading"
-                      class="group relative flex h-12 items-center justify-center gap-2 overflow-hidden rounded-lg border border-cyan-400/40 bg-cyan-500/15 px-5 font-bold uppercase tracking-widest text-cyan-100 transition-all hover:border-cyan-300 hover:bg-cyan-500/25 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/10 to-cyan-500/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-                      @if (isLoading) {
-                        <mat-icon class="animate-spin relative z-10 w-[20px] h-[20px] text-[20px]">sync</mat-icon>
-                        <span class="relative z-10">Syncing</span>
-                      } @else {
-                        <mat-icon class="relative z-10 w-[20px] h-[20px] text-[20px]">search</mat-icon>
-                        <span class="relative z-10">Lookup</span>
-                      }
-                    </button>
-                  </form>
-                  <div class="mt-3 grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 min-[540px]:grid-cols-1">
-                    @for (preset of presetUsers; track preset.username) {
-                      <button
-                        type="button"
-                        (click)="usePresetUsername(preset.username)"
-                        class="inline-flex min-w-0 items-center justify-center gap-2 rounded-lg border border-cyan-300/25 bg-slate-950/50 px-3 py-2 text-xs font-bold uppercase tracking-widest text-cyan-100 transition-all hover:border-cyan-300/60 hover:bg-cyan-500/15"
-                      >
-                        <mat-icon class="shrink-0 text-[16px] h-[16px] w-[16px]">{{preset.icon}}</mat-icon>
-                        <span class="truncate">{{preset.label}}</span>
-                      </button>
-                    }
-                  </div>
-                </div>
-
-                <div class="grid gap-3">
-                  <div class="rounded-lg border border-lime-400/25 bg-lime-400/10 p-3">
-                    <div class="mb-3 flex items-start gap-3">
-                      <span class="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-lime-300 text-sm font-bold text-slate-950">2</span>
-                      <div>
-                        <div class="text-sm font-bold text-lime-100">GitHub login</div>
-                        <div class="text-xs leading-5 text-slate-400">Read-only contribution graph. No repo scope. No writes.</div>
-                      </div>
-                    </div>
-                    <button
-                      (click)="handleLogin()"
-                      [disabled]="isLoading || isAuthUnavailable()"
-                      class="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-lg border border-lime-400/40 bg-lime-400/10 py-3 text-sm font-bold uppercase tracking-widest text-lime-200 transition-all hover:border-lime-300 hover:bg-lime-400/20 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <div class="absolute inset-0 bg-gradient-to-r from-lime-400/0 via-lime-400/10 to-lime-400/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-                      @if (isLoading) {
-                        <mat-icon class="animate-spin relative z-10 w-[18px] h-[18px] text-[18px]">sync</mat-icon>
-                        <span class="relative z-10">Authenticating</span>
-                      } @else if (authApiBaseUrl() === undefined) {
-                        <mat-icon class="animate-spin relative z-10 w-[18px] h-[18px] text-[18px]">sync</mat-icon>
-                        <span class="relative z-10">Preparing</span>
-                      } @else if (authApiBaseUrl() === null) {
-                        <mat-icon class="relative z-10 w-[18px] h-[18px] text-[18px]">lock</mat-icon>
-                        <span class="relative z-10">Not configured</span>
-                      } @else {
-                        <mat-icon class="relative z-10 w-[18px] h-[18px] text-[18px]">login</mat-icon>
-                        <span class="relative z-10">Login</span>
-                      }
-                    </button>
-                  </div>
-
-                  <div class="rounded-lg border border-fuchsia-400/25 bg-fuchsia-500/10 p-3">
-                    <div class="mb-3 flex items-start gap-3">
-                      <span class="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-fuchsia-300 text-sm font-bold text-slate-950">3</span>
-                      <div>
-                        <div class="text-sm font-bold text-fuchsia-100">Enhanced repo read</div>
-                        <div class="text-xs leading-5 text-slate-400">Optional GitHub App access for selected repositories only.</div>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      (click)="handleEnhancedLogin()"
-                      [disabled]="isLoading || enhancedAuthAvailable() !== true"
-                      class="flex w-full items-center justify-center gap-2 rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 py-3 text-sm font-bold uppercase tracking-widest text-fuchsia-100 transition-all hover:border-fuchsia-300 hover:bg-fuchsia-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <mat-icon class="text-[18px] w-[18px] h-[18px]">admin_panel_settings</mat-icon>
-                      @if (enhancedAuthAvailable() === undefined) {
-                        Checking
-                      } @else if (enhancedAuthAvailable()) {
-                        Connect App
-                      } @else {
-                        Setup pending
-                      }
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="mt-4 grid min-w-0 grid-cols-1 gap-2 text-[11px] font-mono uppercase tracking-wider text-slate-500 min-[560px]:grid-cols-3">
-                <span class="inline-flex items-center gap-1">
-                  <mat-icon class="text-[14px] w-[14px] h-[14px] text-emerald-400">lock_open</mat-icon>
-                  No writes
-                </span>
-                <span class="inline-flex items-center gap-1">
-                  <mat-icon class="text-[14px] w-[14px] h-[14px] text-emerald-400">visibility</mat-icon>
-                  Public path first
-                </span>
-                <span class="inline-flex items-center gap-1">
-                  <mat-icon class="text-[14px] w-[14px] h-[14px] text-emerald-400">rule</mat-icon>
-                  Scoped access
-                </span>
-              </div>
-              @if (errorMsg) {
-                <div class="mt-4 flex items-start gap-2 rounded-lg border border-red-500/40 bg-red-950/40 p-4 shadow-[0_0_16px_rgba(239,68,68,0.15)]">
-                  <mat-icon class="shrink-0 text-red-400 mt-0.5">error_outline</mat-icon>
-                  <div>
-                    <p class="text-sm font-bold text-red-300">{{errorMsg}}</p>
-                    <button
-                      type="button"
-                      (click)="connect.emit(username().trim())"
-                      class="mt-2 text-xs font-bold uppercase tracking-wider text-red-400 hover:text-red-200 transition-colors"
-                    >
-                      Retry
-                    </button>
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
-
-          <div class="min-w-0 animate-fade-in-up lg:-mr-6 lg:pt-[66px] xl:-mr-10 flex flex-col" style="animation-delay: 120ms;">
-            <div class="relative overflow-hidden rounded-2xl border border-lime-400/25 bg-slate-950 shadow-[0_0_60px_rgba(163,230,53,0.12)] flex-1 flex items-center justify-center">
-              <div class="absolute inset-0 border-2 border-fuchsia-400/10 pointer-events-none"></div>
-              <img
-                src="vibegotchi-banner.jpeg"
-                alt="VibeGotchi branded virtual pet poster"
-                class="block aspect-[3/2] w-full max-w-full object-cover object-center"
-                loading="eager"
-                fetchpriority="high"
-              />
-            </div>
+        <section class="w-full animate-fade-in-up pt-8 lg:pt-16" style="animation-delay: 120ms;">
+          <div class="relative mb-8 overflow-hidden rounded-2xl border border-lime-400/25 bg-slate-950 shadow-[0_0_60px_rgba(163,230,53,0.12)]">
+            <div class="absolute inset-0 border-2 border-fuchsia-400/10 pointer-events-none"></div>
+            <img
+              src="vibegotchi-banner.jpeg"
+              alt="VibeGotchi branded virtual pet poster"
+              class="block aspect-[3/2] w-full max-w-full object-cover object-center"
+              loading="eager"
+              fetchpriority="high"
+            />
           </div>
         </section>
 
-        <section class="w-full animate-fade-in-up pb-12" style="animation-delay: 220ms;">
+        <section class="w-full animate-fade-in-up pb-12" style="animation-delay: 80ms;">
           <div class="mb-5 flex items-end justify-between gap-4 text-left">
             <div>
-              <h2 class="text-lg font-bold text-slate-100 md:text-xl">Evolution demo</h2>
-              <p class="max-w-3xl text-sm font-mono text-slate-500">Preview every stage instantly. The Elder card is the judge-friendly path with badges, achievements, and score breakdown already unlocked.</p>
+              <h2 class="text-lg font-bold text-slate-100 md:text-xl">Choose scoring mode</h2>
+              <p class="max-w-3xl text-sm font-mono text-slate-500">Fastest demo: score Linus or another preset, then tap Elder below for the full dashboard.</p>
             </div>
-            <mat-icon class="hidden text-emerald-400 sm:block">auto_awesome</mat-icon>
+            <mat-icon class="hidden text-lime-400 sm:block">route</mat-icon>
           </div>
 
-          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            @for (demoState of demoStates; track demoState.stage) {
-              <button
-                type="button"
-                (click)="demo.emit(demoState)"
-                class="group text-left bg-slate-900/70 hover:bg-slate-800/80 border border-slate-800 hover:border-lime-400/60 rounded-lg p-3 transition-all shadow-lg"
-                [class.border-lime-400]="demoState.stage === 'Elder'"
-                [class.bg-lime-400/10]="demoState.stage === 'Elder'"
-              >
-                <div class="h-40 flex items-center justify-center overflow-visible rounded-md bg-slate-950/40 sm:h-44">
-                  <div class="w-36 transition-transform group-hover:scale-105 sm:w-40">
-                    <app-pet [state]="demoState" [interactive]="false"></app-pet>
-                  </div>
-                </div>
-                <div class="mt-2 flex items-center justify-between gap-2">
-                  <div>
-                    <div class="text-sm font-bold text-slate-100">{{demoState.stage}}</div>
-                    <div class="text-xs font-mono text-slate-500">Lvl {{demoState.level}} · {{demoState.careState}}</div>
-                  </div>
-                  <mat-icon class="text-[18px] w-[18px] h-[18px] text-slate-500 group-hover:text-lime-300">play_arrow</mat-icon>
-                </div>
-              </button>
-            }
+          <div class="mb-3 flex items-start gap-2 rounded-lg border border-emerald-400/20 bg-emerald-400/10 p-3 text-xs leading-5 text-emerald-100">
+            <mat-icon class="mt-0.5 shrink-0 text-[16px] h-[16px] w-[16px] text-emerald-300">shield</mat-icon>
+            <span>No writes. No classic repo scope. Optional GitHub App access only reads selected repositories.</span>
           </div>
+
+          <div class="grid gap-4 min-[540px]:grid-cols-[1.12fr_0.88fr]">
+            <div class="rounded-lg border border-cyan-400/30 bg-cyan-500/10 p-4">
+              <div class="mb-3 flex items-start gap-3">
+                <span class="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-cyan-300 text-sm font-bold text-slate-950">1</span>
+                <div>
+                  <div class="text-sm font-bold text-cyan-100">Public username lookup</div>
+                  <div class="text-xs leading-5 text-slate-400">No login. Scores recent public activity and visible public repositories.</div>
+                </div>
+              </div>
+              <form (ngSubmit)="onSubmit()" class="grid gap-3">
+                <div class="relative group">
+                  <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
+                    <mat-icon>code</mat-icon>
+                  </div>
+                  <input
+                    type="text"
+                    name="username"
+                    [ngModel]="username()"
+                    (ngModelChange)="username.set($event)"
+                    placeholder="GitHub username"
+                    required
+                    autocomplete="off"
+                    class="h-12 w-full rounded-lg border border-slate-700/70 bg-slate-900/80 py-3 pl-12 pr-4 font-mono text-slate-100 placeholder:text-slate-600 shadow-inner transition-all focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
+                  >
+                </div>
+
+                <button
+                  type="submit"
+                  [disabled]="!username() || isLoading"
+                  class="group relative flex h-12 items-center justify-center gap-2 overflow-hidden rounded-lg border border-cyan-400/40 bg-cyan-500/15 px-5 font-bold uppercase tracking-widest text-cyan-100 transition-all hover:border-cyan-300 hover:bg-cyan-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/10 to-cyan-500/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                  @if (isLoading) {
+                    <mat-icon class="animate-spin relative z-10 w-[20px] h-[20px] text-[20px]">sync</mat-icon>
+                    <span class="relative z-10">Syncing</span>
+                  } @else {
+                    <mat-icon class="relative z-10 w-[20px] h-[20px] text-[20px]">search</mat-icon>
+                    <span class="relative z-10">Lookup</span>
+                  }
+                </button>
+              </form>
+              <div class="mt-3 grid grid-cols-2 min-[540px]:grid-cols-4 gap-2">
+                @for (preset of presetUsers; track preset.username) {
+                  <button
+                    type="button"
+                    (click)="usePresetUsername(preset.username)"
+                    class="inline-flex min-w-0 items-center justify-center gap-2 rounded-lg border border-cyan-300/25 bg-slate-950/50 px-3 py-2 text-xs font-bold uppercase tracking-widest text-cyan-100 transition-all hover:border-cyan-300/60 hover:bg-cyan-500/15"
+                  >
+                    <mat-icon class="shrink-0 text-[16px] h-[16px] w-[16px]">{{preset.icon}}</mat-icon>
+                    <span class="truncate">{{preset.label}}</span>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="grid gap-3">
+              <div class="rounded-lg border border-lime-400/25 bg-lime-400/10 p-4">
+                <div class="mb-3 flex items-start gap-3">
+                  <span class="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-lime-300 text-sm font-bold text-slate-950">2</span>
+                  <div>
+                    <div class="text-sm font-bold text-lime-100">GitHub login</div>
+                    <div class="text-xs leading-5 text-slate-400">Read-only contribution graph. No repo scope. No writes.</div>
+                  </div>
+                </div>
+                <button
+                  (click)="handleLogin()"
+                  [disabled]="isLoading || isAuthUnavailable()"
+                  class="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-lg border border-lime-400/40 bg-lime-400/10 py-3 text-sm font-bold uppercase tracking-widest text-lime-200 transition-all hover:border-lime-300 hover:bg-lime-400/20 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <div class="absolute inset-0 bg-gradient-to-r from-lime-400/0 via-lime-400/10 to-lime-400/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                  @if (isLoading) {
+                    <mat-icon class="animate-spin relative z-10 w-[18px] h-[18px] text-[18px]">sync</mat-icon>
+                    <span class="relative z-10">Authenticating</span>
+                  } @else if (authApiBaseUrl() === undefined) {
+                    <mat-icon class="animate-spin relative z-10 w-[18px] h-[18px] text-[18px]">sync</mat-icon>
+                    <span class="relative z-10">Preparing</span>
+                  } @else if (authApiBaseUrl() === null) {
+                    <mat-icon class="relative z-10 w-[18px] h-[18px] text-[18px]">lock</mat-icon>
+                    <span class="relative z-10">Not configured</span>
+                  } @else {
+                    <mat-icon class="relative z-10 w-[18px] h-[18px] text-[18px]">login</mat-icon>
+                    <span class="relative z-10">Login</span>
+                  }
+                </button>
+              </div>
+
+              <div class="rounded-lg border border-fuchsia-400/25 bg-fuchsia-500/10 p-4">
+                <div class="mb-3 flex items-start gap-3">
+                  <span class="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-fuchsia-300 text-sm font-bold text-slate-950">3</span>
+                  <div>
+                    <div class="text-sm font-bold text-fuchsia-100">Enhanced repo read</div>
+                    <div class="text-xs leading-5 text-slate-400">Optional GitHub App access for selected repositories only.</div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  (click)="handleEnhancedLogin()"
+                  [disabled]="isLoading || enhancedAuthAvailable() !== true"
+                  class="flex w-full items-center justify-center gap-2 rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 py-3 text-sm font-bold uppercase tracking-widest text-fuchsia-100 transition-all hover:border-fuchsia-300 hover:bg-fuchsia-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <mat-icon class="text-[18px] w-[18px] h-[18px]">admin_panel_settings</mat-icon>
+                  @if (enhancedAuthAvailable() === undefined) {
+                    Checking
+                  } @else if (enhancedAuthAvailable()) {
+                    Connect App
+                  } @else {
+                    Setup pending
+                  }
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 grid min-w-0 grid-cols-1 gap-2 text-[11px] font-mono uppercase tracking-wider text-slate-500 min-[560px]:grid-cols-3">
+            <span class="inline-flex items-center gap-1">
+              <mat-icon class="text-[14px] w-[14px] h-[14px] text-emerald-400">lock_open</mat-icon>
+              No writes
+            </span>
+            <span class="inline-flex items-center gap-1">
+              <mat-icon class="text-[14px] w-[14px] h-[14px] text-emerald-400">visibility</mat-icon>
+              Public path first
+            </span>
+            <span class="inline-flex items-center gap-1">
+              <mat-icon class="text-[14px] w-[14px] h-[14px] text-emerald-400">rule</mat-icon>
+              Scoped access
+            </span>
+          </div>
+          @if (errorMsg) {
+            <div class="mt-4 flex items-start gap-2 rounded-lg border border-red-500/40 bg-red-950/40 p-4 shadow-[0_0_16px_rgba(239,68,68,0.15)]">
+              <mat-icon class="shrink-0 text-red-400 mt-0.5">error_outline</mat-icon>
+              <div>
+                <p class="text-sm font-bold text-red-300">{{errorMsg}}</p>
+                <button
+                  type="button"
+                  (click)="connect.emit(username().trim())"
+                  class="mt-2 text-xs font-bold uppercase tracking-wider text-red-400 hover:text-red-200 transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          }
         </section>
 
-        <section class="w-full animate-fade-in-up pb-12" style="animation-delay: 280ms;">
+        <section class="w-full animate-fade-in-up pb-12" style="animation-delay: 180ms;">
           <div class="mb-5 flex items-end justify-between gap-4 text-left">
             <div>
               <h2 class="text-lg font-bold text-slate-100 md:text-xl">Feature map</h2>
