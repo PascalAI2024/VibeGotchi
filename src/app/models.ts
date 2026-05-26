@@ -35,6 +35,7 @@ export interface GitHubRepository {
   language: string | null;
   private?: boolean;
   detectedTechs?: string[];
+  updated_at?: string;
 }
 
 export interface TechBadge {

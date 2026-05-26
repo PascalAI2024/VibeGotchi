@@ -365,19 +365,18 @@ export class PetEngineService {
         tech: representativeTech,
         repoCount,
         level: badgeRank.level,
-        tier: badgeRank.tier,
+        tier: badgeRank.tier as TechBadge['tier'],
       });
     }
 
-    return badgeEntries
-      .map(entry => ({
+    return (badgeEntries.map(entry => ({
         tech: entry.tech,
         repoCount: entry.repoCount,
         iconSlug: this.getSimpleIconSlug(entry.tech),
         iconUrl: this.getSimpleIconUrl(entry.tech),
         level: entry.level,
         tier: entry.tier,
-      }))
+      })) as TechBadge[])
       .sort((a, b) => b.level - a.level || b.repoCount - a.repoCount || a.tech.localeCompare(b.tech))
       .slice(0, 12);
   }
@@ -400,8 +399,6 @@ export class PetEngineService {
     if (score >= 2) return { level: 2, tier: 'Silver' };
     return { level: 1, tier: 'Bronze' };
   }
-
-  private getBadgeRank(repoCount: number): Pick<TechBadge, 'level' | 'tier'> {
 
   private getSimpleIconSlug(tech: string): string | null {
     const slugMap: Record<string, string> = {
