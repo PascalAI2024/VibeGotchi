@@ -21,3 +21,11 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck:functions
       - run: CF_PAGES=1 npm run build:pages
+      - name: Enforce bundle size budget
+        run: |
+          INITIAL=$(ls dist/app/browser/*.js 2>/dev/null | head -1 | xargs wc -c | awk '{print $1}')
+          if [ -n "$INITIAL" ] && [ "$INITIAL" -gt 2097152 ]; then
+            echo "ERROR: Initial bundle size ($INITIAL bytes) exceeds 2MB budget (2097152 bytes)"
+            exit 1
+          fi
+          echo "Bundle size check passed ($INITIAL bytes)"

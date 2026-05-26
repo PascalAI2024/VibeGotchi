@@ -27,6 +27,7 @@ import { MatIconModule } from '@angular/material/icon';
           <app-dashboard 
             [user]="currentUser()!" 
             [state]="currentState()!"
+            [loading]="isLoading()"
             (logout)="reset()">
           </app-dashboard>
         } @else {

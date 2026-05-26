@@ -57,6 +57,11 @@ export interface ScoreBreakdownItem {
   value: number;
 }
 
+export interface EvolutionMilestone {
+  from: PetState['stage'];
+  to: PetState['stage'];
+}
+
 export interface PetState {
   stage: 'Egg' | 'Baby' | 'Teen' | 'Adult' | 'Elder';
   health: number; // 0-100
@@ -77,4 +82,5 @@ export interface PetState {
   achievements: AchievementBadge[];
   scoreBreakdown: ScoreBreakdownItem[];
   personalityLine: string;
+  evolutionMilestone?: EvolutionMilestone | null;
 }

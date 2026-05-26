@@ -1,20 +1,35 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { GitHubUser, GitHubEvent, GitHubContributionSummary, GitHubRepository } from './models';
+
+export class GithubError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number | null,
+    public readonly isRateLimit: boolean
+  ) {
+    super(message);
+    this.name = 'GithubError';
+  }
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class GithubService {
   private http = inject(HttpClient);
-  
+
   private token: string | null = null;
-  
+
+  // 5-minute in-memory cache to protect rate limits
+  private cache = new Map<string, { data: unknown; timestamp: number }>();
+  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
   setToken(token: string) {
     this.token = token;
   }
-  
+
   private getHeaders(): HttpHeaders {
     let headers = new HttpHeaders();
     if (this.token) {
@@ -22,39 +37,80 @@ export class GithubService {
     }
     return headers;
   }
-  
+
+  private getCached<T>(key: string): T | null {
+    const entry = this.cache.get(key);
+    if (entry && Date.now() - entry.timestamp < this.CACHE_TTL) {
+      return entry.data as T;
+    }
+    this.cache.delete(key);
+    return null;
+  }
+
+  private setCached(key: string, data: unknown): void {
+    this.cache.set(key, { data, timestamp: Date.now() });
+  }
+
+  private handleError(error: unknown, context: string): never {
+    if (error instanceof HttpErrorResponse) {
+      const isRateLimit = error.status === 403 || error.status === 429;
+      throw new GithubError(
+        isRateLimit
+          ? 'GitHub API rate limit reached. Please try again later.'
+          : error.status === 404
+            ? 'User not found on GitHub.'
+            : `GitHub API error (${error.status}): ${error.statusText}`,
+        error.status,
+        isRateLimit
+      );
+    }
+    throw new GithubError(`Failed to ${context}: ${error instanceof Error ? error.message : String(error)}`, null, false);
+  }
+
   async getUser(username?: string): Promise<GitHubUser | null> {
+    const cacheKey = username ? `user:${username}` : 'user:me';
+    const cached = this.getCached<GitHubUser>(cacheKey);
+    if (cached) return cached;
+
     try {
-      const url = username 
+      const url = username
         ? `https://api.github.com/users/${username}`
         : `https://api.github.com/user`;
-      
+
       const response = await firstValueFrom(
         this.http.get<GitHubUser>(url, { headers: this.getHeaders() })
       );
+      this.setCached(cacheKey, response);
       return response;
     } catch (error) {
-      console.error('Error fetching user', error);
-      return null;
+      this.handleError(error, 'fetch user');
     }
   }
 
   async getUserEvents(username: string): Promise<GitHubEvent[]> {
+    const cacheKey = `events:${username}`;
+    const cached = this.getCached<GitHubEvent[]>(cacheKey);
+    if (cached) return cached;
+
     try {
-      // Fetch up to 100 recent events
       const response = await firstValueFrom(
-        this.http.get<GitHubEvent[]>(`https://api.github.com/users/${username}/events?per_page=100`, { 
-          headers: this.getHeaders() 
+        this.http.get<GitHubEvent[]>(`https://api.github.com/users/${username}/events?per_page=100`, {
+          headers: this.getHeaders()
         })
       );
-      return response || [];
+      const result = response || [];
+      this.setCached(cacheKey, result);
+      return result;
     } catch (error) {
-      console.error('Error fetching events', error);
-      return [];
+      this.handleError(error, 'fetch user events');
     }
   }
 
   async getRepositories(username?: string): Promise<GitHubRepository[]> {
+    const cacheKey = username ? `repos:${username}` : 'repos:me';
+    const cached = this.getCached<GitHubRepository[]>(cacheKey);
+    if (cached) return cached;
+
     const repos: GitHubRepository[] = [];
     const baseUrl = username
       ? `https://api.github.com/users/${username}/repos`
@@ -84,10 +140,10 @@ export class GithubService {
         }
       }
 
+      this.setCached(cacheKey, repos);
       return repos;
     } catch (error) {
-      console.error('Error fetching repositories', error);
-      return repos;
+      this.handleError(error, 'fetch repositories');
     }
   }
 
@@ -102,10 +158,14 @@ export class GithubService {
         continue;
       }
 
-      enriched.push({
-        ...repo,
-        detectedTechs: await this.detectPackageTech(repo.full_name),
-      });
+      try {
+        enriched.push({
+          ...repo,
+          detectedTechs: await this.detectPackageTech(repo.full_name),
+        });
+      } catch {
+        enriched.push(repo);
+      }
     }
 
     return enriched;
@@ -163,9 +223,11 @@ export class GithubService {
   }
 
   async getAuthenticatedContributionSummary(): Promise<GitHubContributionSummary | null> {
-    if (!this.token) {
-      return null;
-    }
+    if (!this.token) return null;
+
+    const cacheKey = 'contribution:summary';
+    const cached = this.getCached<GitHubContributionSummary>(cacheKey);
+    if (cached) return cached;
 
     const from = new Date();
     from.setFullYear(from.getFullYear() - 1);
@@ -214,19 +276,18 @@ export class GithubService {
       );
 
       const collection = response.data?.viewer?.contributionsCollection;
-      if (!collection) {
-        return null;
-      }
+      if (!collection) return null;
 
-      return {
+      const result = {
         totalContributions: collection.contributionCalendar.totalContributions,
         totalCommitContributions: collection.totalCommitContributions,
         restrictedContributionsCount: collection.restrictedContributionsCount,
         contributionDays: collection.contributionCalendar.weeks.flatMap((week) => week.contributionDays),
       };
+      this.setCached(cacheKey, result);
+      return result;
     } catch (error) {
-      console.error('Error fetching contribution summary', error);
-      return null;
+      this.handleError(error, 'fetch contribution summary');
     }
   }
 }

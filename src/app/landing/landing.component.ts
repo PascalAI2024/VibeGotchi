@@ -197,10 +197,19 @@ import { PetState } from '../models';
                 </span>
               </div>
               @if (errorMsg) {
-                <p class="mt-4 flex items-center gap-1 text-sm font-mono text-red-400">
-                  <mat-icon class="text-[16px] w-[16px] h-[16px]">error_outline</mat-icon>
-                  {{errorMsg}}
-                </p>
+                <div class="mt-4 flex items-start gap-2 rounded-lg border border-red-500/40 bg-red-950/40 p-4 shadow-[0_0_16px_rgba(239,68,68,0.15)]">
+                  <mat-icon class="shrink-0 text-red-400 mt-0.5">error_outline</mat-icon>
+                  <div>
+                    <p class="text-sm font-bold text-red-300">{{errorMsg}}</p>
+                    <button
+                      type="button"
+                      (click)="connect.emit(username().trim())"
+                      class="mt-2 text-xs font-bold uppercase tracking-wider text-red-400 hover:text-red-200 transition-colors"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                </div>
               }
             </div>
           </div>

@@ -8,6 +8,9 @@ import {
   TechBadge,
 } from './models';
 
+// Shared level divisor — used by both scoring paths so level is consistent regardless of data source
+const SHARED_LEVEL_DIVISOR = 25;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -32,7 +35,8 @@ export class PetEngineService {
       techBadges: [],
       achievements: [],
       scoreBreakdown: [],
-      personalityLine: 'Neglected. Awaiting signs of life from the commit mines.'
+      personalityLine: 'Neglected. Awaiting signs of life from the commit mines.',
+      evolutionMilestone: null,
     };
   }
   
@@ -71,35 +75,35 @@ export class PetEngineService {
       }
     }
 
-    // Calculate streak (very naive: group by day, count consecutive days back from today or yesterday)
+    // Calculate streak — use ISO date strings (YYYY-MM-DD) to avoid month-boundary collisions
     let streak = 0;
     const daysWithCommits = new Set<string>();
     for (const push of pushEvents) {
       const d = new Date(push.created_at);
-      const dateStr = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      const dateStr = d.toISOString().slice(0, 10); // "2026-01-31" not "2026-1-31"
       daysWithCommits.add(dateStr);
     }
-    
+
     // check backwards from today
     // allow yesterday to keep streak active
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     let currentStreak = 0;
     const inspectingDate = new Date();
-    
+
     // If today exists, start counting from today, else try yesterday
-    const todayStr = `${inspectingDate.getFullYear()}-${inspectingDate.getMonth()}-${inspectingDate.getDate()}`;
-    const yesterdayStr = `${yesterday.getFullYear()}-${yesterday.getMonth()}-${yesterday.getDate()}`;
-    
+    const todayStr = inspectingDate.toISOString().slice(0, 10);
+    const yesterdayStr = yesterday.toISOString().slice(0, 10);
+
     if (daysWithCommits.has(todayStr) || daysWithCommits.has(yesterdayStr)) {
         let dateWalker = new Date();
         if (!daysWithCommits.has(todayStr) && daysWithCommits.has(yesterdayStr)) {
             dateWalker = yesterday;
         }
-        
+
         while (true) {
-            const str = `${dateWalker.getFullYear()}-${dateWalker.getMonth()}-${dateWalker.getDate()}`;
+            const str = dateWalker.toISOString().slice(0, 10);
             if (daysWithCommits.has(str)) {
                 currentStreak++;
                 dateWalker.setDate(dateWalker.getDate() - 1);
@@ -119,8 +123,8 @@ export class PetEngineService {
     const careState = this.getCareState(daysSinceLast);
     const freshnessXp = this.getFreshnessXp(careState);
     const xp = pushXp + streakXp + badgeXp + freshnessXp;
-    const level = Math.floor(Math.sqrt(xp / 20)) + 1;
-    const xpToNextLevel = Math.pow(level, 2) * 20;
+    const level = Math.max(1, Math.floor(Math.sqrt(xp / SHARED_LEVEL_DIVISOR)) + 1);
+    const xpToNextLevel = Math.pow(level, 2) * SHARED_LEVEL_DIVISOR;
 
     // Determine Health
     // Health degrades by 10 per day without commits
@@ -142,6 +146,7 @@ export class PetEngineService {
     else if (streak > 2) mood = 'Ecstatic';
     else if (health > 70) mood = 'Happy';
 
+    // Enrich state with achievements, personality, and check for evolution milestone
     return this.enrichState({
       stage,
       health,
@@ -155,7 +160,7 @@ export class PetEngineService {
       commitStreak: streak,
       recentCommitsCount: totalPushes,
       privateContributionsCount: 0,
-      topLanguage: 'Code', 
+      topLanguage: 'Code',
       lastCommitMessage,
       activitySource: 'Recent public GitHub events',
       techBadges,
@@ -214,8 +219,8 @@ export class PetEngineService {
     const careState = this.getCareState(daysSinceLast);
     const freshnessXp = this.getFreshnessXp(careState);
     const xp = contributionXp + commitXp + streakXp + badgeXp + freshnessXp;
-    const level = Math.max(1, Math.floor(Math.sqrt(xp / 35)) + 1);
-    const xpToNextLevel = Math.pow(level, 2) * 35;
+    const level = Math.max(1, Math.floor(Math.sqrt(xp / SHARED_LEVEL_DIVISOR)) + 1);
+    const xpToNextLevel = Math.pow(level, 2) * SHARED_LEVEL_DIVISOR;
     let health = Math.max(0, 100 - daysSinceLast * 12);
     if (daysSinceLast === 0) health = 100;
 
@@ -271,8 +276,15 @@ export class PetEngineService {
       personalityLine: state.personalityLine || '',
     };
 
+    // Detect evolution milestone (stage changed from a different one)
+    const prevStage = (normalizedState as PetState & { _prevStage?: string })._prevStage;
+    const evolutionMilestone = prevStage && prevStage !== state.stage
+      ? { from: prevStage as PetState['stage'], to: state.stage }
+      : null;
+
     return {
       ...normalizedState,
+      evolutionMilestone,
       achievements: normalizedState.achievements.length ? normalizedState.achievements : this.calculateAchievements(normalizedState),
       personalityLine: normalizedState.personalityLine || this.getPersonalityLine(normalizedState),
       scoreBreakdown: normalizedState.scoreBreakdown.length
@@ -282,37 +294,114 @@ export class PetEngineService {
   }
 
   private calculateTechBadges(repos: GitHubRepository[]): TechBadge[] {
-    const counts = new Map<string, number>();
+    // Map languages to ecosystems for normalized scoring
+    const ecosystemMap = this.getEcosystemMap();
+
+    // Group techs by ecosystem
+    type EcosystemGroup = {
+      repos: Set<string>;
+      techs: Set<string>;
+      lastUpdated?: Date;
+    };
+    const ecosystemGroups = new Map<string, EcosystemGroup>();
 
     for (const repo of repos) {
-      if (repo.fork) {
-        continue;
-      }
+      if (repo.fork) continue;
 
       const repoTechs = new Set<string>();
-      if (repo.language) {
-        repoTechs.add(repo.language);
-      }
-      for (const tech of repo.detectedTechs || []) {
-        repoTechs.add(tech);
-      }
+      if (repo.language) repoTechs.add(repo.language);
+      for (const tech of repo.detectedTechs || []) repoTechs.add(tech);
 
       for (const tech of repoTechs) {
-        counts.set(tech, (counts.get(tech) || 0) + 1);
+        const ecosystem = ecosystemMap[tech] ?? 'Other';
+        if (!ecosystemGroups.has(ecosystem)) {
+          ecosystemGroups.set(ecosystem, { repos: new Set(), techs: new Set(), lastUpdated: undefined });
+        }
+        const group = ecosystemGroups.get(ecosystem)!;
+        group.repos.add(repo.full_name || repo.name);
+        group.techs.add(tech);
+        if (repo.updated_at && !group.lastUpdated) {
+          const updated = new Date(repo.updated_at);
+          if (!isNaN(updated.getTime())) group.lastUpdated = updated;
+        }
       }
     }
 
-    return [...counts.entries()]
-      .map(([tech, repoCount]) => ({
-        tech,
+    // Build badge entries from ecosystem groups
+    const badgeEntries: { tech: string; repoCount: number; level: number; tier: string }[] = [];
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+    for (const [ecosystem, group] of ecosystemGroups) {
+      const repoCount = group.repos.size;
+      const varietyCount = group.techs.size;
+      const isRecent = group.lastUpdated && group.lastUpdated > ninetyDaysAgo;
+
+      // Calculate normalized score
+      let score = 0;
+      if (ecosystem === 'JS/TS') {
+        // JS/TS gets variety bonus + recency bonus; cap per-language weight at 3
+        score = Math.min(repoCount, 3) + (varietyCount - 1) * 0.5 + (isRecent ? 1 : 0);
+      } else {
+        // Other ecosystems: capped repo count
+        score = Math.min(repoCount, 3) + (varietyCount - 1) * 0.5;
+      }
+
+      // Map ecosystem group to a representative tech name for display
+      const representativeTech = ecosystem === 'JS/TS' ? 'JavaScript' :
+        ecosystem === 'Python' ? 'Python' :
+        ecosystem === 'Rust' ? 'Rust' :
+        ecosystem === 'Go' ? 'Go' :
+        ecosystem === 'Java' ? 'Java' :
+        ecosystem === 'C/C++' ? 'C++' :
+        ecosystem === 'Ruby' ? 'Ruby' :
+        ecosystem === 'PHP' ? 'PHP' :
+        ecosystem === 'Swift' ? 'Swift' :
+        ecosystem === 'Kotlin' ? 'Kotlin' :
+        ecosystem === 'C#' ? 'C#' : [...group.techs][0] || ecosystem;
+
+      const badgeRank = this.getBadgeRankFromScore(Math.floor(score));
+      badgeEntries.push({
+        tech: representativeTech,
         repoCount,
-        iconSlug: this.getSimpleIconSlug(tech),
-        iconUrl: this.getSimpleIconUrl(tech),
-        ...this.getBadgeRank(repoCount),
+        level: badgeRank.level,
+        tier: badgeRank.tier,
+      });
+    }
+
+    return badgeEntries
+      .map(entry => ({
+        tech: entry.tech,
+        repoCount: entry.repoCount,
+        iconSlug: this.getSimpleIconSlug(entry.tech),
+        iconUrl: this.getSimpleIconUrl(entry.tech),
+        level: entry.level,
+        tier: entry.tier,
       }))
       .sort((a, b) => b.level - a.level || b.repoCount - a.repoCount || a.tech.localeCompare(b.tech))
       .slice(0, 12);
   }
+
+  private getEcosystemMap(): Record<string, string> {
+    return {
+      JavaScript: 'JS/TS', TypeScript: 'JS/TS',
+      React: 'JS/TS', Vue: 'JS/TS', Svelte: 'JS/TS', Astro: 'JS/TS',
+      'Next.js': 'JS/TS', Remix: 'JS/TS', Vite: 'JS/TS',
+      NestJS: 'JS/TS', Express: 'JS/TS', 'Tailwind CSS': 'JS/TS',
+      Prisma: 'JS/TS', Supabase: 'JS/TS', 'Three.js': 'JS/TS',
+      MDX: 'JS/TS', 'Jupyter Notebook': 'Python',
+    };
+  }
+
+  private getBadgeRankFromScore(score: number): Pick<TechBadge, 'level' | 'tier'> {
+    if (score >= 10) return { level: 5, tier: 'Legend' };
+    if (score >= 7) return { level: 4, tier: 'Platinum' };
+    if (score >= 4) return { level: 3, tier: 'Gold' };
+    if (score >= 2) return { level: 2, tier: 'Silver' };
+    return { level: 1, tier: 'Bronze' };
+  }
+
+  private getBadgeRank(repoCount: number): Pick<TechBadge, 'level' | 'tier'> {
 
   private getSimpleIconSlug(tech: string): string | null {
     const slugMap: Record<string, string> = {

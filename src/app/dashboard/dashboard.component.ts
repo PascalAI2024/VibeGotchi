@@ -8,6 +8,34 @@ import { MatIconModule } from '@angular/material/icon';
   standalone: true,
   imports: [PetComponent, MatIconModule],
   template: `
+    @if (loading) {
+      <div class="min-h-screen w-full flex flex-col items-center justify-start md:justify-center p-4 pt-12 animate-pulse">
+        <div class="w-full max-w-4xl flex items-center justify-between mb-8">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-slate-700"></div>
+            <div>
+              <div class="h-5 w-32 bg-slate-700 rounded mb-1"></div>
+              <div class="h-3 w-20 bg-slate-800 rounded"></div>
+            </div>
+          </div>
+        </div>
+        <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="flex flex-col gap-4 order-2 md:order-1">
+            <div class="bg-slate-800/50 border border-slate-700/50 backdrop-blur-md rounded-2xl p-5 h-24"></div>
+            <div class="bg-slate-800/50 border border-slate-700/50 backdrop-blur-md rounded-2xl p-5 h-24"></div>
+          </div>
+          <div class="flex flex-col items-center justify-center order-1 md:order-2">
+            <div class="h-8 w-40 bg-slate-700 rounded mb-2"></div>
+            <div class="w-48 h-48 rounded-full bg-slate-800"></div>
+            <div class="w-48 h-2 bg-slate-700 rounded mt-4"></div>
+          </div>
+          <div class="flex flex-col gap-4 order-3 md:order-3">
+            <div class="bg-slate-800/50 border border-slate-700/50 backdrop-blur-md rounded-2xl p-5 h-24"></div>
+            <div class="bg-slate-800/50 border border-slate-700/50 backdrop-blur-md rounded-2xl p-5 h-24"></div>
+          </div>
+        </div>
+      </div>
+    } @else {
     <div class="min-h-screen w-full flex flex-col items-center justify-start md:justify-center p-4 pt-12">
       
       <!-- Top Bar -->
@@ -296,15 +324,19 @@ import { MatIconModule } from '@angular/material/icon';
         </div>
       }
     </div>
+    }
   `
 })
 export class DashboardComponent {
   @Input({required: true}) user!: GitHubUser;
   @Input({required: true}) state!: PetState;
+  @Input() loading = false;
   @Output() logout = new EventEmitter<void>();
   interactionMessage = '';
+  evolutionToast = '';
   private interactionHealthBoost = 0;
   private interactionXpBoost = 0;
+  private evolutionMilestoneShown = false;
   private interactionTimer: ReturnType<typeof setTimeout> | null = null;
 
   interact(action: 'feed' | 'pet' | 'play') {
