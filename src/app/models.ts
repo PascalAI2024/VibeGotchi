@@ -6,6 +6,19 @@ export interface GitHubUser {
   public_repos: number;
 }
 
+export interface DemoPersona {
+  /** Stable id used by [trackBy] in @for and as a localStorage key. */
+  id: string;
+  /** Display name shown on the demo card. */
+  name: string;
+  /** Material icon name shown next to the persona name. */
+  icon: string;
+  /** One-line vivid story shown on the demo card. */
+  story: string;
+  /** Hex color used as the card's top accent stripe (without the # is fine — CSS handles both). */
+  accentColor: string;
+}
+
 export interface GitHubEvent {
   type: string;
   created_at: string;
@@ -84,4 +97,6 @@ export interface PetState {
   scoreBreakdown: ScoreBreakdownItem[];
   personalityLine: string;
   evolutionMilestone?: EvolutionMilestone | null;
+  /** Optional 90-day contribution history for the activity timeline strip. */
+  contributionDays?: ContributionDay[];
 }

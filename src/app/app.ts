@@ -1,7 +1,7 @@
 import {ChangeDetectionStrategy, Component, inject, signal} from '@angular/core';
 import { GithubService } from './github.service';
 import { PetEngineService } from './pet-engine.service';
-import { GitHubUser, PetState, TechBadge } from './models';
+import { ContributionDay, GitHubUser, PetState, TechBadge, DemoPersona } from './models';
 import { LandingComponent } from './landing/landing.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { MatIconModule } from '@angular/material/icon';
@@ -31,10 +31,10 @@ import { MatIconModule } from '@angular/material/icon';
             (logout)="reset()">
           </app-dashboard>
         } @else {
-          <app-landing 
-             [isLoading]="isLoading()" 
+          <app-landing
+             [isLoading]="isLoading()"
              [errorMsg]="errorMsg()"
-             [demoStates]="demoStates"
+             [demoPersonas]="demoPersonas"
              (connect)="handleConnect($event)"
              (authFinish)="handleAuthFinish($event)"
              (enhancedAuthFinish)="handleEnhancedAuthFinish($event)"
@@ -53,6 +53,145 @@ export class App {
   currentState = signal<PetState | null>(null);
   isLoading = signal(false);
   errorMsg = signal('');
+  /**
+   * Distinct demo personas for the "Try a demo" section on the landing.
+   * Each entry pairs a `DemoPersona` (name, icon, story) with the
+   * `PetState` that gets loaded into the dashboard when the card is clicked.
+   *
+   * The personas are intentionally diverse — different stages, languages,
+   * commit cadences, and stories — so judges (and curious visitors) can see
+   * how the engine handles a wide range of GitHub profiles in seconds.
+   */
+  readonly demoPersonas: { persona: DemoPersona; state: PetState }[] = [
+    {
+      persona: {
+        id: 'new-coder',
+        name: 'New Coder',
+        icon: 'auto_awesome',
+        story: 'Bootcamp grad. One repo. Maximum confidence.',
+        accentColor: '#10b981',
+      },
+      state: {
+        ...this.demoState({
+          stage: 'Egg',
+          health: 100,
+          mood: 'Ecstatic',
+          posture: 'Stand',
+          level: 1,
+          xp: 45,
+          xpToNextLevel: 100,
+          daysSinceLastCommit: 0,
+          commitStreak: 1,
+          recentCommitsCount: 3,
+          topLanguage: 'Python',
+          lastCommitMessage: 'feat: hello world (literally)',
+          techBadges: this.demoTechBadges([
+            ['Python', 1],
+          ])
+        }),
+        contributionDays: this.buildPersonaDays('new-coder', 3, 0),
+      },
+    },
+    {
+      persona: {
+        id: 'weekend-hacker',
+        name: 'Weekend Hacker',
+        icon: 'weekend',
+        story: 'Lives for side projects. Treats Mon–Fri as recovery time.',
+        accentColor: '#06b6d4',
+      },
+      state: {
+        ...this.demoState({
+          stage: 'Teen',
+          health: 88,
+          mood: 'Happy',
+          posture: 'Sit',
+          level: 4,
+          xp: 480,
+          xpToNextLevel: 500,
+          daysSinceLastCommit: 3,
+          commitStreak: 2,
+          recentCommitsCount: 17,
+          topLanguage: 'Rust',
+          lastCommitMessage: 'feat: rewrite the rewrite in Rust (again)',
+          techBadges: this.demoTechBadges([
+            ['Rust', 4],
+            ['TypeScript', 2],
+            ['Shell', 1],
+          ])
+        }),
+        contributionDays: this.buildPersonaDays('weekend-hacker', 17, 3),
+      },
+    },
+    {
+      persona: {
+        id: 'startup-founder',
+        name: 'Startup Founder',
+        icon: 'rocket_launch',
+        story: 'Day job plus side hustle plus 3am refactors. The pet drinks espresso.',
+        accentColor: '#f59e0b',
+      },
+      state: {
+        ...this.demoState({
+          stage: 'Adult',
+          health: 72,
+          mood: 'Happy',
+          posture: 'Stand',
+          level: 8,
+          xp: 1320,
+          xpToNextLevel: 1280,
+          daysSinceLastCommit: 0,
+          commitStreak: 14,
+          recentCommitsCount: 58,
+          topLanguage: 'TypeScript',
+          lastCommitMessage: 'fix: investors hate this one weird race condition',
+          techBadges: this.demoTechBadges([
+            ['TypeScript', 12],
+            ['Python', 6],
+            ['Go', 3],
+            ['JavaScript', 4],
+          ])
+        }),
+        contributionDays: this.buildPersonaDays('startup-founder', 58, 0),
+      },
+    },
+    {
+      persona: {
+        id: 'oss-maintainer',
+        name: 'Open Source Maintainer',
+        icon: 'hub',
+        story: 'Reviews your PR at 2am. Approves in the morning. Single comment.',
+        accentColor: '#d946ef',
+      },
+      state: {
+        ...this.demoState({
+          stage: 'Elder',
+          health: 95,
+          mood: 'Ecstatic',
+          posture: 'Sit',
+          level: 12,
+          xp: 3100,
+          xpToNextLevel: 3380,
+          daysSinceLastCommit: 0,
+          commitStreak: 47,
+          recentCommitsCount: 132,
+          topLanguage: 'TypeScript',
+          lastCommitMessage: 'chore: cut 0.18.4 release (87 commits later)',
+          techBadges: this.demoTechBadges([
+            ['TypeScript', 28],
+            ['Python', 18],
+            ['Go', 9],
+            ['JavaScript', 12],
+            ['Rust', 6],
+            ['Shell', 7],
+          ])
+        }),
+        contributionDays: this.buildPersonaDays('oss-maintainer', 132, 0),
+      },
+    },
+  ];
+
+  /** Backwards-compat flat list of states — the landing iterates over this. */
   demoStates: PetState[] = [
     this.demoState({
       stage: 'Egg',
@@ -332,5 +471,77 @@ export class App {
     if (daysSinceLastCommit <= 3) return 'Active';
     if (daysSinceLastCommit <= 14) return 'Resting';
     return 'Neglected';
+  }
+
+  /**
+   * Deterministic per-persona 90-day contribution pattern. The same persona
+   * produces the same grid on every render so screenshots and tests are stable.
+   */
+  private buildPersonaDays(
+    personaId: string,
+    targetTotal: number,
+    daysSinceLast: number,
+  ): ContributionDay[] {
+    const days: ContributionDay[] = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Hash persona id + day index for stable, persona-shaped patterns
+    const hash = (s: string): number => {
+      let h = 2166136261;
+      for (let i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = (h * 16777619) >>> 0;
+      }
+      return h;
+    };
+
+    for (let i = 89; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().slice(0, 10);
+      const seed = hash(`${personaId}:${dateStr}`);
+      const r = (seed % 1000) / 1000;
+      const dow = d.getDay();
+      let count = 0;
+
+      if (personaId === 'new-coder') {
+        // Almost all zeros; the last `targetTotal` days have small bursts
+        count = i < targetTotal ? Math.max(1, Math.floor(r * 3) + 1) : 0;
+      } else if (personaId === 'weekend-hacker') {
+        // Heavy on weekends (Sat=6, Sun=0), sparse on weekdays
+        if (dow === 0 || dow === 6) {
+          count = r < 0.7 ? Math.floor(r * 8) + 1 : 0;
+        } else {
+          count = r < 0.2 ? Math.floor(r * 3) + 1 : 0;
+        }
+      } else if (personaId === 'startup-founder') {
+        // Even spread with occasional spikes
+        if (r < 0.78) {
+          count = Math.floor(r * 10) + 1;
+        }
+      } else if (personaId === 'oss-maintainer') {
+        // High even activity every day
+        count = Math.floor(r * 14) + 1;
+      }
+
+      // The last `daysSinceLast` days (other than today) should be 0
+      if (i > 0 && i <= daysSinceLast) {
+        count = 0;
+      }
+
+      days.push({ date: dateStr, contributionCount: count });
+    }
+
+    // Normalize: scale counts so the sum roughly matches targetTotal
+    const actualTotal = days.reduce((s, d) => s + d.contributionCount, 0);
+    if (actualTotal > 0 && actualTotal !== targetTotal) {
+      const scale = targetTotal / actualTotal;
+      for (const day of days) {
+        if (day.contributionCount === 0) continue;
+        day.contributionCount = Math.max(1, Math.round(day.contributionCount * scale));
+      }
+    }
+    return days;
   }
 }

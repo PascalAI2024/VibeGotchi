@@ -1,7 +1,7 @@
 import { Component, Output, EventEmitter, signal, Input, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { PetState } from '../models';
+import { PetState, DemoPersona } from '../models';
 
 @Component({
   selector: 'app-landing',
@@ -214,41 +214,25 @@ import { PetState } from '../models';
             <mat-icon class="hidden text-amber-300 sm:block">auto_awesome</mat-icon>
           </div>
 
-          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            @for (demo of demoStates; track demo.stage) {
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            @for (entry of demoPersonas; track entry.persona.id) {
               <button
                 type="button"
-                (click)="selectDemo(demo)"
+                (click)="selectDemo(entry.state)"
                 class="group relative flex min-w-0 flex-col items-stretch gap-2 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/65 p-3 text-left shadow-lg transition-all hover:-translate-y-0.5 hover:border-lime-400/60 hover:shadow-[0_8px_30px_rgba(163,230,53,0.18)]"
-                [attr.aria-label]="'Open ' + demo.stage + ' demo dashboard'"
+                [attr.aria-label]="'Open ' + entry.persona.name + ' demo dashboard'"
               >
-                <div class="absolute inset-x-0 top-0 h-1"
-                  [class.bg-emerald-400]="demo.stage === 'Egg'"
-                  [class.bg-cyan-400]="demo.stage === 'Baby'"
-                  [class.bg-amber-400]="demo.stage === 'Teen'"
-                  [class.bg-fuchsia-400]="demo.stage === 'Adult'"
-                  [class.bg-rose-400]="demo.stage === 'Elder'"></div>
-                <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-mono uppercase tracking-widest text-slate-500">Lvl {{demo.level}}</span>
-                  <span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider"
-                    [class.border-emerald-400]="demo.careState === 'Thriving'"
-                    [class.text-emerald-300]="demo.careState === 'Thriving'"
-                    [class.border-cyan-400]="demo.careState === 'Active'"
-                    [class.text-cyan-300]="demo.careState === 'Active'"
-                    [class.border-amber-400]="demo.careState === 'Resting'"
-                    [class.text-amber-300]="demo.careState === 'Resting'"
-                    [class.border-red-400]="demo.careState === 'Neglected'"
-                    [class.text-red-300]="demo.careState === 'Neglected'">
-                    {{demo.careState}}
-                  </span>
+                <div class="absolute inset-x-0 top-0 h-1" [style.backgroundColor]="entry.persona.accentColor"></div>
+                <div class="flex items-center gap-2 pt-1">
+                  <mat-icon class="text-[18px] h-[18px] w-[18px] shrink-0" [style.color]="entry.persona.accentColor">{{entry.persona.icon}}</mat-icon>
+                  <div class="min-w-0">
+                    <div class="text-sm font-bold text-slate-100 truncate">{{entry.persona.name}}</div>
+                    <div class="text-[10px] font-mono uppercase tracking-widest text-slate-500">Lvl {{entry.state.level}} {{entry.state.stage}}</div>
+                  </div>
                 </div>
-                <div class="flex items-center gap-2">
-                  <span class="text-base font-bold text-slate-100">{{demo.stage}}</span>
-                  <span class="text-[11px] text-slate-500">·</span>
-                  <span class="text-[11px] font-mono text-slate-400">{{demo.mood}}</span>
-                </div>
+                <p class="text-[11px] leading-snug text-slate-400 line-clamp-2 min-h-[2.5rem]">{{entry.persona.story}}</p>
                 <div class="flex items-center gap-1.5">
-                  @for (badge of (demo.techBadges || []).slice(0, 3); track badge.tech) {
+                  @for (badge of (entry.state.techBadges || []).slice(0, 4); track badge.tech) {
                     <span class="grid h-5 w-5 shrink-0 place-items-center rounded-sm border border-slate-800 bg-slate-950"
                       [title]="badge.tech + ' Lv ' + badge.level">
                       @if (badge.iconUrl) {
@@ -258,12 +242,20 @@ import { PetState } from '../models';
                       }
                     </span>
                   }
-                  @if ((demo.techBadges || []).length > 3) {
-                    <span class="text-[10px] font-mono text-slate-500">+{{(demo.techBadges || []).length - 3}}</span>
+                  @if ((entry.state.techBadges || []).length > 4) {
+                    <span class="text-[10px] font-mono text-slate-500">+{{(entry.state.techBadges || []).length - 4}}</span>
                   }
                 </div>
                 <div class="mt-1 flex items-center justify-between text-[10px] font-mono text-slate-500">
-                  <span>{{demo.commitStreak}} day streak</span>
+                  <span class="inline-flex items-center gap-1">
+                    <span
+                      class="inline-block h-1.5 w-1.5 rounded-full"
+                      [class.bg-emerald-400]="entry.state.careState === 'Thriving'"
+                      [class.bg-cyan-400]="entry.state.careState === 'Active'"
+                      [class.bg-amber-400]="entry.state.careState === 'Resting'"
+                      [class.bg-red-500]="entry.state.careState === 'Neglected'"></span>
+                    {{entry.state.careState}}
+                  </span>
                   <mat-icon class="text-[14px] h-[14px] w-[14px] text-slate-600 transition-colors group-hover:text-lime-300">arrow_forward</mat-icon>
                 </div>
               </button>
@@ -482,7 +474,7 @@ export class LandingComponent implements OnInit, OnDestroy {
   ];
   @Input() isLoading = false;
   @Input() errorMsg = '';
-  @Input({ required: true }) demoStates: PetState[] = [];
+  @Input({ required: true }) demoPersonas: { persona: DemoPersona; state: PetState }[] = [];
   
   @Output() connect = new EventEmitter<string>();
   @Output() authFinish = new EventEmitter<string>();

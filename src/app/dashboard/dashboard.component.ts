@@ -1,13 +1,30 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { PetState, GitHubUser } from '../models';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef, inject, signal } from '@angular/core';
+import { PetState, GitHubUser, AchievementBadge } from '../models';
 import { PetComponent } from '../pet/pet.component';
 import { MatIconModule } from '@angular/material/icon';
+import { AchievementCelebrationComponent } from '../achievement-celebration/achievement-celebration.component';
+import { ActivityTimelineComponent } from '../activity-timeline/activity-timeline.component';
+import { SHARE_CARD_THEMES, ShareCardTheme, getShareCardTheme, renderShareCard } from '../share-card';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [PetComponent, MatIconModule],
+  imports: [PetComponent, MatIconModule, AchievementCelebrationComponent, ActivityTimelineComponent],
   template: `
+    <!-- Achievement celebration queue (fixed top-right) -->
+    @if (celebrationQueue.length > 0) {
+      <div class="pointer-events-none fixed right-4 top-4 z-50 flex flex-col gap-3 items-end" aria-live="polite">
+        @for (badge of celebrationQueue; track $index; let i = $index) {
+          <div class="pointer-events-auto">
+            <app-achievement-celebration
+              [achievement]="badge"
+              (dismiss)="dismissCelebration(i)">
+            </app-achievement-celebration>
+          </div>
+        }
+      </div>
+    }
+
     @if (loading) {
       <div class="min-h-screen w-full flex flex-col items-center justify-start md:justify-center p-4 pt-12 animate-pulse">
         <div class="w-full max-w-4xl flex items-center justify-between mb-8">
@@ -64,13 +81,54 @@ import { MatIconModule } from '@angular/material/icon';
           </div>
         </div>
         <div class="flex items-center gap-2 sm:gap-3">
-          <button
-            (click)="downloadShareCard()"
-            class="inline-flex items-center gap-2 rounded-md border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-sm font-medium text-emerald-200 transition-all hover:border-emerald-300 hover:bg-emerald-400/20 focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
-            aria-label="Download share card as PNG">
-            <mat-icon class="text-[18px] w-[18px] h-[18px]">ios_share</mat-icon>
-            <span class="hidden sm:inline">Share Card</span>
-          </button>
+          <div class="relative" data-share-menu-host>
+            <button
+              (click)="shareMenuOpen.set(!shareMenuOpen())"
+              [attr.aria-expanded]="shareMenuOpen()"
+              aria-haspopup="menu"
+              class="inline-flex items-center gap-2 rounded-md border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-sm font-medium text-emerald-200 transition-all hover:border-emerald-300 hover:bg-emerald-400/20 focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
+              aria-label="Choose a share card theme">
+              <mat-icon class="text-[18px] w-[18px] h-[18px]">ios_share</mat-icon>
+              <span class="hidden sm:inline">Share</span>
+              <mat-icon class="text-[14px] w-[14px] h-[14px] opacity-70">expand_more</mat-icon>
+            </button>
+            @if (shareMenuOpen()) {
+              <div
+                role="menu"
+                data-share-menu-host
+                class="absolute right-0 z-30 mt-2 w-72 overflow-hidden rounded-lg border border-slate-700/60 bg-slate-950/95 shadow-2xl backdrop-blur">
+                <div class="px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-slate-500">Share card theme</div>
+                @for (theme of themes; track theme.id) {
+                  <button
+                    type="button"
+                    role="menuitemradio"
+                    [attr.aria-checked]="selectedThemeId() === theme.id"
+                    (click)="selectTheme(theme.id)"
+                    class="flex w-full items-center gap-3 px-3 py-2 text-left text-sm transition-colors hover:bg-slate-800/80"
+                    [class.bg-slate-800]="selectedThemeId() === theme.id">
+                    <span
+                      class="h-6 w-6 shrink-0 rounded border border-slate-700"
+                      [style.background]="themeSwatch(theme)"></span>
+                    <span class="flex-1 min-w-0">
+                      <span class="block truncate font-semibold text-slate-100">{{theme.label}}</span>
+                      <span class="block truncate text-[10px] font-mono uppercase tracking-widest text-slate-500">{{theme.pattern}}</span>
+                    </span>
+                    @if (selectedThemeId() === theme.id) {
+                      <mat-icon class="text-[18px] h-[18px] w-[18px] text-emerald-300">check</mat-icon>
+                    }
+                  </button>
+                }
+                <div class="border-t border-slate-800 p-2">
+                  <button
+                    type="button"
+                    (click)="downloadShareCard()"
+                    class="w-full rounded-md bg-emerald-500 px-3 py-2 text-sm font-bold uppercase tracking-widest text-slate-950 transition-all hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40">
+                    Download {{selectedThemeLabel()}}
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
           <button
             (click)="logout.emit()"
             class="inline-flex items-center gap-2 rounded-md border border-slate-700/60 bg-slate-900/60 px-3 py-1.5 text-sm font-medium text-slate-300 transition-all hover:border-slate-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-slate-500/40"
@@ -107,6 +165,10 @@ import { MatIconModule } from '@angular/material/icon';
           </div>
         </section>
       }
+
+      <section class="w-full max-w-4xl mb-6 rounded-lg border border-slate-800 bg-slate-900/60 p-4">
+        <app-activity-timeline [days]="state.contributionDays ?? []"></app-activity-timeline>
+      </section>
 
       <!-- Main Stage -->
       <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -380,7 +442,7 @@ import { MatIconModule } from '@angular/material/icon';
     }
   `
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnChanges {
   @Input({required: true}) user!: GitHubUser;
   @Input({required: true}) state!: PetState;
   @Input() loading = false;
@@ -391,6 +453,115 @@ export class DashboardComponent {
   private interactionXpBoost = 0;
   private evolutionMilestoneShown = false;
   private interactionTimer: ReturnType<typeof setTimeout> | null = null;
+  private cdr = inject(ChangeDetectorRef);
+
+  /**
+   * Active achievement celebrations (newest first, max 3 at a time).
+   * Populated by ngOnChanges when new achievements appear in the state.
+   */
+  celebrationQueue: AchievementBadge[] = [];
+  private seenAchievementKey = '';
+  private initialSeen = false;
+
+  /** Share card theme picker state. */
+  readonly themes = SHARE_CARD_THEMES;
+  selectedThemeId = signal<string>('classic');
+  shareMenuOpen = signal(false);
+  private documentClickHandler = (event: MouseEvent) => {
+    if (!this.shareMenuOpen()) {
+      return;
+    }
+    const target = event.target as HTMLElement | null;
+    if (target && !target.closest('[data-share-menu-host]')) {
+      this.shareMenuOpen.set(false);
+      this.cdr.markForCheck();
+    }
+  };
+
+  private documentKeydownHandler = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && this.shareMenuOpen()) {
+      this.shareMenuOpen.set(false);
+      this.cdr.markForCheck();
+    }
+  };
+
+  constructor() {
+    if (typeof document !== 'undefined') {
+      document.addEventListener('click', this.documentClickHandler);
+      document.addEventListener('keydown', this.documentKeydownHandler);
+    }
+  }
+
+  selectTheme(themeId: string) {
+    this.selectedThemeId.set(themeId);
+    this.shareMenuOpen.set(false);
+  }
+
+  selectedTheme(): ShareCardTheme {
+    return getShareCardTheme(this.selectedThemeId());
+  }
+
+  selectedThemeLabel(): string {
+    return this.selectedTheme().label;
+  }
+
+  themeSwatch(theme: ShareCardTheme): string {
+    const stops = theme.backgroundStops
+      .map((s) => `${s.color} ${Math.round(s.offset * 100)}%`)
+      .join(', ');
+    return `linear-gradient(135deg, ${stops})`;
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['state'] && this.state && this.user) {
+      this.refreshCelebrations();
+    }
+  }
+
+  private refreshCelebrations() {
+    if (typeof window === 'undefined' || !this.user) {
+      return;
+    }
+    const key = `vibegotchi:seen-achievements:${this.user.login}`;
+    this.seenAchievementKey = key;
+    let seen: string[] = [];
+    try {
+      const raw = window.localStorage.getItem(key);
+      seen = raw ? (JSON.parse(raw) as string[]) : [];
+    } catch {
+      seen = [];
+    }
+
+    const current = this.state.achievements.map((a) => a.name);
+    const newOnes = this.state.achievements.filter((a) => !seen.includes(a.name));
+
+    // Mark all current achievements as seen immediately so the toast
+    // doesn't re-fire on the next state update. Cap visible celebrations.
+    try {
+      window.localStorage.setItem(key, JSON.stringify(current));
+    } catch {
+      // ignore quota / privacy-mode errors
+    }
+
+    if (newOnes.length === 0) {
+      this.initialSeen = true;
+      return;
+    }
+    // Only celebrate on a real change; skip on the very first mount to avoid
+    // a wall of toasts when a user lands on the dashboard with 4 achievements.
+    if (!this.initialSeen) {
+      this.initialSeen = true;
+      return;
+    }
+    // Cap to first 3 new achievements to avoid overwhelming the user.
+    this.celebrationQueue = [...newOnes.slice(0, 3).reverse(), ...this.celebrationQueue].slice(0, 3);
+    this.cdr.markForCheck();
+  }
+
+  dismissCelebration(index: number) {
+    this.celebrationQueue = this.celebrationQueue.filter((_, i) => i !== index);
+    this.cdr.markForCheck();
+  }
 
   interact(action: 'feed' | 'pet' | 'play') {
     if (action === 'feed') {
@@ -428,83 +599,25 @@ export class DashboardComponent {
   }
 
   downloadShareCard() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1200;
-    canvas.height = 630;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const topBadges = this.state.techBadges.slice(0, 4);
-    const gradient = ctx.createLinearGradient(0, 0, 1200, 630);
-    gradient.addColorStop(0, '#020617');
-    gradient.addColorStop(0.55, '#0f172a');
-    gradient.addColorStop(1, '#064e3b');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 1200, 630);
-
-    ctx.strokeStyle = '#10b981';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(28, 28, 1144, 574);
-
-    ctx.fillStyle = '#a7f3d0';
-    ctx.font = '700 30px monospace';
-    ctx.fillText('VIBE GOTCHI', 70, 90);
-
-    ctx.fillStyle = '#f8fafc';
-    ctx.font = '800 68px sans-serif';
-    ctx.fillText(`${this.state.stage} · Level ${this.state.level}`, 70, 175);
-
-    ctx.fillStyle = '#cbd5e1';
-    ctx.font = '28px monospace';
-    ctx.fillText(`@${this.user.login}`, 70, 225);
-    ctx.fillText(`${this.state.careState} · ${this.displayHealth()}% vitality · ${this.state.commitStreak} day streak`, 70, 270);
-
-    ctx.fillStyle = '#e2e8f0';
-    ctx.font = '24px monospace';
-    this.wrapText(ctx, this.state.personalityLine, 70, 335, 820, 34);
-
-    ctx.fillStyle = '#10b981';
-    ctx.font = '700 26px monospace';
-    ctx.fillText('Top Tech Badges', 70, 455);
-
-    topBadges.forEach((badge, index) => {
-      const x = 70 + index * 260;
-      ctx.fillStyle = '#0f172a';
-      ctx.fillRect(x, 485, 230, 82);
-      ctx.strokeStyle = '#334155';
-      ctx.strokeRect(x, 485, 230, 82);
-      ctx.fillStyle = '#f8fafc';
-      ctx.font = '700 24px sans-serif';
-      ctx.fillText(badge.tech.slice(0, 13), x + 18, 522);
-      ctx.fillStyle = '#a7f3d0';
-      ctx.font = '18px monospace';
-      ctx.fillText(`Lv ${badge.level} ${badge.tier}`, x + 18, 552);
-    });
-
-    ctx.fillStyle = '#64748b';
-    ctx.font = '18px monospace';
-    ctx.fillText('vibegotchi.pages.dev', 880, 585);
-
-    const link = document.createElement('a');
-    link.download = `vibegotchi-${this.user.login}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  }
-
-  private wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number) {
-    const words = text.split(' ');
-    let line = '';
-    for (const word of words) {
-      const testLine = `${line}${word} `;
-      if (ctx.measureText(testLine).width > maxWidth && line) {
-        ctx.fillText(line, x, y);
-        line = `${word} `;
-        y += lineHeight;
-      } else {
-        line = testLine;
-      }
+    if (typeof document === 'undefined') {
+      return;
     }
-    ctx.fillText(line, x, y);
+    const dataUrl = renderShareCard(
+      {
+        user: this.user,
+        state: this.state,
+        vitalityOverride: this.displayHealth(),
+        xpOverride: this.displayXp(),
+      },
+      this.selectedTheme(),
+    );
+    if (!dataUrl) {
+      return;
+    }
+    const link = document.createElement('a');
+    link.download = `vibegotchi-${this.user.login}-${this.selectedThemeId()}.png`;
+    link.href = dataUrl;
+    link.click();
   }
 
   careIcon() {
