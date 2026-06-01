@@ -39,32 +39,57 @@ import { MatIconModule } from '@angular/material/icon';
     <div class="min-h-screen w-full flex flex-col items-center justify-start md:justify-center p-4 pt-12">
       
       <!-- Top Bar -->
-      <div class="w-full max-w-4xl flex items-center justify-between mb-8">
-        <div class="flex items-center gap-4">
-          <img [src]="user.avatar_url" class="w-12 h-12 rounded-full border-2 border-slate-700 shadow-lg" [alt]="user.login" crossorigin="anonymous" referrerpolicy="no-referrer">
-          <div>
-            <h2 class="text-xl font-bold text-slate-100 font-sans">{{user.name || user.login}}</h2>
-            <p class="text-sm text-slate-400 font-mono">&#64;{{user.login}}</p>
+      <div class="w-full max-w-4xl flex items-center justify-between mb-6 gap-3 flex-wrap">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="relative shrink-0">
+            <img [src]="user.avatar_url" class="w-12 h-12 rounded-full border-2 border-slate-700 shadow-lg" [alt]="user.login" crossorigin="anonymous" referrerpolicy="no-referrer">
+            <span
+              class="absolute -bottom-0.5 -right-0.5 grid h-5 w-5 place-items-center rounded-full border-2 border-slate-950"
+              [class.bg-emerald-400]="state.careState === 'Thriving'"
+              [class.bg-cyan-400]="state.careState === 'Active'"
+              [class.bg-amber-400]="state.careState === 'Resting'"
+              [class.bg-red-500]="state.careState === 'Neglected'"
+              [attr.aria-label]="state.careState + ' status'"
+              [title]="state.careState">
+              <mat-icon class="text-[12px] h-[12px] w-[12px] text-slate-950">{{careIcon()}}</mat-icon>
+            </span>
+          </div>
+          <div class="min-w-0">
+            <h2 class="text-xl font-bold text-slate-100 font-sans truncate">{{user.name || user.login}}</h2>
+            <div class="flex items-center gap-2 text-sm font-mono text-slate-400">
+              <span class="truncate">&#64;{{user.login}}</span>
+              <span class="hidden sm:inline text-slate-700">·</span>
+              <span class="hidden sm:inline text-[11px] uppercase tracking-widest text-slate-500">Lvl {{state.level}} {{state.stage}}</span>
+            </div>
           </div>
         </div>
-        <div class="flex items-center gap-3">
-          <button (click)="downloadShareCard()" class="text-emerald-300 hover:text-emerald-200 transition-colors flex items-center gap-2 text-sm font-medium">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <button
+            (click)="downloadShareCard()"
+            class="inline-flex items-center gap-2 rounded-md border border-emerald-400/30 bg-emerald-400/10 px-3 py-1.5 text-sm font-medium text-emerald-200 transition-all hover:border-emerald-300 hover:bg-emerald-400/20 focus:outline-none focus:ring-2 focus:ring-emerald-400/40"
+            aria-label="Download share card as PNG">
             <mat-icon class="text-[18px] w-[18px] h-[18px]">ios_share</mat-icon>
-            Share Card
+            <span class="hidden sm:inline">Share Card</span>
           </button>
-          <button (click)="logout.emit()" class="text-slate-400 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium">
+          <button
+            (click)="logout.emit()"
+            class="inline-flex items-center gap-2 rounded-md border border-slate-700/60 bg-slate-900/60 px-3 py-1.5 text-sm font-medium text-slate-300 transition-all hover:border-slate-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-slate-500/40"
+            aria-label="Switch to another user">
             <mat-icon class="text-[18px] w-[18px] h-[18px]">logout</mat-icon>
-            Switch User
+            <span class="hidden sm:inline">Switch</span>
           </button>
         </div>
       </div>
 
-      <section class="w-full max-w-4xl mb-6 bg-slate-900/70 border border-emerald-500/20 rounded-lg p-4">
-        <div class="flex items-start gap-3">
-          <mat-icon class="text-emerald-400 mt-0.5">psychology</mat-icon>
-          <div>
-            <div class="text-[10px] uppercase tracking-wider text-slate-500 font-mono mb-1">Pet readout</div>
-            <p class="text-slate-200 font-mono text-sm md:text-base">{{state.personalityLine}}</p>
+      <section class="w-full max-w-4xl mb-6 relative overflow-hidden rounded-lg border border-emerald-500/20 bg-gradient-to-r from-slate-900/80 via-slate-900/70 to-emerald-950/40 p-4">
+        <div class="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none" aria-hidden="true"></div>
+        <div class="relative flex items-start gap-3">
+          <div class="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-emerald-500/30 bg-emerald-500/10">
+            <mat-icon class="text-emerald-400">psychology</mat-icon>
+          </div>
+          <div class="min-w-0">
+            <div class="text-[10px] uppercase tracking-widest text-emerald-300/80 font-mono mb-1">Pet readout</div>
+            <p class="text-slate-100 font-mono text-sm md:text-base leading-relaxed">{{state.personalityLine}}</p>
           </div>
         </div>
       </section>
@@ -88,17 +113,19 @@ import { MatIconModule } from '@angular/material/icon';
         
         <!-- Stats Left -->
         <div class="flex flex-col gap-4 order-2 md:order-1">
-          <div class="bg-slate-800/50 border border-slate-700/50 backdrop-blur-md rounded-2xl p-5 shadow-sm">
+          <div class="relative overflow-hidden rounded-2xl border border-slate-700/50 bg-slate-800/50 p-5 shadow-sm backdrop-blur-md">
+            <div class="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-amber-400/0 via-amber-400/70 to-amber-400/0" aria-hidden="true"></div>
             <div class="flex items-center gap-2 mb-2 text-slate-400">
-               <mat-icon class="text-[18px] w-[18px] h-[18px]">local_fire_department</mat-icon>
+               <mat-icon class="text-[18px] w-[18px] h-[18px] text-amber-400">local_fire_department</mat-icon>
                <span class="text-xs uppercase tracking-wider font-semibold">Streak</span>
             </div>
             <div class="text-3xl font-mono font-bold text-amber-400">{{state.commitStreak}} <span class="text-lg text-slate-500">Days</span></div>
           </div>
-          
-          <div class="bg-slate-800/50 border border-slate-700/50 backdrop-blur-md rounded-2xl p-5 shadow-sm">
+
+          <div class="relative overflow-hidden rounded-2xl border border-slate-700/50 bg-slate-800/50 p-5 shadow-sm backdrop-blur-md">
+            <div class="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-cyan-400/0 via-cyan-400/70 to-cyan-400/0" aria-hidden="true"></div>
             <div class="flex items-center gap-2 mb-2 text-slate-400">
-               <mat-icon class="text-[18px] w-[18px] h-[18px]">history</mat-icon>
+               <mat-icon class="text-[18px] w-[18px] h-[18px] text-cyan-300">history</mat-icon>
                <span class="text-xs uppercase tracking-wider font-semibold">Last Commit</span>
             </div>
             <div class="text-2xl font-mono font-bold text-slate-200">
@@ -175,48 +202,74 @@ import { MatIconModule } from '@angular/material/icon';
           </div>
           
           <!-- XP Bar -->
-          <div class="w-48 mt-4">
-            <div class="flex justify-between text-[10px] text-slate-500 font-mono mb-1 uppercase tracking-wider">
-              <span>XP {{displayXp()}}</span>
-              <span>Next {{state.xpToNextLevel}}</span>
+          <div class="w-56 mt-4">
+            <div class="flex justify-between text-[10px] text-slate-400 font-mono mb-1 uppercase tracking-widest">
+              <span>XP <span class="text-slate-200">{{displayXp()}}</span></span>
+              <span>Next <span class="text-slate-200">{{state.xpToNextLevel}}</span></span>
             </div>
-            <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-              <div class="h-full bg-indigo-500 transition-all duration-1000 ease-out" 
-                   [style.width.%]="xpPercent()"></div>
+            <div class="relative h-2 w-full overflow-hidden rounded-full bg-slate-800/80 ring-1 ring-inset ring-slate-700/50">
+              <div
+                class="h-full rounded-full bg-gradient-to-r from-indigo-500 via-fuchsia-500 to-amber-400 transition-all duration-1000 ease-out"
+                [style.width.%]="xpPercent()"></div>
+              <div class="absolute inset-y-0 right-0 w-px bg-slate-700/80" aria-hidden="true"></div>
             </div>
           </div>
         </div>
 
         <!-- Stats Right -->
         <div class="flex flex-col gap-4 order-3 md:order-3">
-          <div class="bg-slate-800/50 border border-slate-700/50 backdrop-blur-md rounded-2xl p-5 shadow-sm">
+          <div class="relative overflow-hidden rounded-2xl border border-slate-700/50 bg-slate-800/50 p-5 shadow-sm backdrop-blur-md">
+            <div class="absolute inset-x-0 top-0 h-0.5"
+              [class.bg-gradient-to-r]="true"
+              [class.from-emerald-400]="displayHealth() > 70"
+              [class.via-emerald-400]="displayHealth() > 70"
+              [class.to-emerald-400]="displayHealth() > 70"
+              [class.from-amber-400]="displayHealth() > 30 && displayHealth() <= 70"
+              [class.via-amber-400]="displayHealth() > 30 && displayHealth() <= 70"
+              [class.to-amber-400]="displayHealth() > 30 && displayHealth() <= 70"
+              [class.from-red-500]="displayHealth() <= 30"
+              [class.via-red-500]="displayHealth() <= 30"
+              [class.to-red-500]="displayHealth() <= 30"
+              aria-hidden="true"></div>
              <div class="flex items-center gap-2 mb-2 text-slate-400">
-               <mat-icon class="text-[18px] w-[18px] h-[18px]">favorite</mat-icon>
+               <mat-icon class="text-[18px] w-[18px] h-[18px]"
+                 [class.text-emerald-400]="displayHealth() > 70"
+                 [class.text-amber-400]="displayHealth() > 30 && displayHealth() <= 70"
+                 [class.text-red-500]="displayHealth() <= 30">favorite</mat-icon>
                <span class="text-xs uppercase tracking-wider font-semibold">Vitality</span>
             </div>
             <div class="flex items-end gap-2">
-              <div class="text-3xl font-mono font-bold" 
+              <div class="text-3xl font-mono font-bold"
                    [class.text-emerald-400]="displayHealth() > 70"
                    [class.text-amber-400]="displayHealth() > 30 && displayHealth() <= 70"
                    [class.text-red-500]="displayHealth() <= 30">{{displayHealth()}}%</div>
             </div>
+            <div class="mt-3 h-1 w-full overflow-hidden rounded-full bg-slate-900/80">
+              <div
+                class="h-full rounded-full transition-all duration-1000 ease-out"
+                [style.width.%]="displayHealth()"
+                [class.bg-emerald-400]="displayHealth() > 70"
+                [class.bg-amber-400]="displayHealth() > 30 && displayHealth() <= 70"
+                [class.bg-red-500]="displayHealth() <= 30"></div>
+            </div>
             <div class="mt-2 text-xs text-slate-500">{{careDescription()}}</div>
           </div>
-          
-          <div class="bg-slate-800/50 border border-slate-700/50 backdrop-blur-md rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+
+          <div class="relative overflow-hidden rounded-2xl border border-slate-700/50 bg-slate-800/50 p-5 shadow-sm backdrop-blur-md flex flex-col justify-between">
+            <div class="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-fuchsia-400/0 via-fuchsia-400/70 to-fuchsia-400/0" aria-hidden="true"></div>
             <div class="flex items-center gap-2 mb-2 text-slate-400">
-               <mat-icon class="text-[18px] w-[18px] h-[18px]">terminal</mat-icon>
+               <mat-icon class="text-[18px] w-[18px] h-[18px] text-fuchsia-300">terminal</mat-icon>
                <span class="text-xs uppercase tracking-wider font-semibold">Latest Commit</span>
             </div>
-            <div class="text-sm text-slate-300 italic line-clamp-3 font-mono bg-slate-900/50 p-2 rounded-md border border-slate-800">
+            <div class="text-sm text-slate-200 italic line-clamp-3 font-mono bg-slate-950/60 p-3 rounded-md border border-slate-800 break-words">
                @if (state.lastCommitMessage) {
                  "{{state.lastCommitMessage}}"
                } @else {
-                 No recent commits detected.
+                 <span class="not-italic text-slate-500">No recent commits detected.</span>
                }
             </div>
             @if (state.activitySource) {
-              <div class="mt-2 text-[10px] uppercase tracking-wider text-slate-500 font-mono">
+              <div class="mt-2 text-[10px] uppercase tracking-widest text-slate-500 font-mono truncate">
                 {{state.activitySource}}
               </div>
             }

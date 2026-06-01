@@ -1,13 +1,12 @@
 import { Component, Output, EventEmitter, signal, Input, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { PetComponent } from '../pet/pet.component';
 import { PetState } from '../models';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [FormsModule, MatIconModule, PetComponent],
+  imports: [FormsModule, MatIconModule],
   template: `
     <div class="min-h-screen w-full max-w-full overflow-x-hidden px-5 py-8 sm:px-6 lg:px-8 landing-shell">
       <div class="mx-auto flex w-full max-w-7xl flex-col gap-8">
@@ -182,7 +181,7 @@ import { PetState } from '../models';
           }
         </section>
 
-        <section class="w-full animate-fade-in-up pb-12" style="animation-delay: 180ms;">
+        <section class="w-full animate-fade-in-up pb-10" style="animation-delay: 180ms;">
           <div class="mb-5 flex items-end justify-between gap-4 text-left">
             <div>
               <h2 class="text-lg font-bold text-slate-100 md:text-xl">Feature map</h2>
@@ -202,6 +201,72 @@ import { PetState } from '../models';
                   <span class="mt-1 block text-xs leading-5 text-slate-500">{{item.detail}}</span>
                 </span>
               </div>
+            }
+          </div>
+        </section>
+
+        <section class="w-full animate-fade-in-up pb-12" style="animation-delay: 260ms;">
+          <div class="mb-5 flex items-end justify-between gap-4 text-left">
+            <div>
+              <h2 class="text-lg font-bold text-slate-100 md:text-xl">Try a demo</h2>
+              <p class="max-w-3xl text-sm font-mono text-slate-500">No login, no API calls. Click a stage to see the full dashboard instantly.</p>
+            </div>
+            <mat-icon class="hidden text-amber-300 sm:block">auto_awesome</mat-icon>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            @for (demo of demoStates; track demo.stage) {
+              <button
+                type="button"
+                (click)="selectDemo(demo)"
+                class="group relative flex min-w-0 flex-col items-stretch gap-2 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/65 p-3 text-left shadow-lg transition-all hover:-translate-y-0.5 hover:border-lime-400/60 hover:shadow-[0_8px_30px_rgba(163,230,53,0.18)]"
+                [attr.aria-label]="'Open ' + demo.stage + ' demo dashboard'"
+              >
+                <div class="absolute inset-x-0 top-0 h-1"
+                  [class.bg-emerald-400]="demo.stage === 'Egg'"
+                  [class.bg-cyan-400]="demo.stage === 'Baby'"
+                  [class.bg-amber-400]="demo.stage === 'Teen'"
+                  [class.bg-fuchsia-400]="demo.stage === 'Adult'"
+                  [class.bg-rose-400]="demo.stage === 'Elder'"></div>
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-mono uppercase tracking-widest text-slate-500">Lvl {{demo.level}}</span>
+                  <span class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider"
+                    [class.border-emerald-400]="demo.careState === 'Thriving'"
+                    [class.text-emerald-300]="demo.careState === 'Thriving'"
+                    [class.border-cyan-400]="demo.careState === 'Active'"
+                    [class.text-cyan-300]="demo.careState === 'Active'"
+                    [class.border-amber-400]="demo.careState === 'Resting'"
+                    [class.text-amber-300]="demo.careState === 'Resting'"
+                    [class.border-red-400]="demo.careState === 'Neglected'"
+                    [class.text-red-300]="demo.careState === 'Neglected'">
+                    {{demo.careState}}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-base font-bold text-slate-100">{{demo.stage}}</span>
+                  <span class="text-[11px] text-slate-500">·</span>
+                  <span class="text-[11px] font-mono text-slate-400">{{demo.mood}}</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  @for (badge of (demo.techBadges || []).slice(0, 3); track badge.tech) {
+                    <span class="grid h-5 w-5 shrink-0 place-items-center rounded-sm border border-slate-800 bg-slate-950"
+                      [title]="badge.tech + ' Lv ' + badge.level">
+                      @if (badge.iconUrl) {
+                        <img [src]="badge.iconUrl" [alt]="badge.tech + ' logo'" class="h-3 w-3" loading="lazy" referrerpolicy="no-referrer">
+                      } @else {
+                        <span class="text-[8px] font-bold text-slate-400">{{badge.tech.slice(0, 2).toUpperCase()}}</span>
+                      }
+                    </span>
+                  }
+                  @if ((demo.techBadges || []).length > 3) {
+                    <span class="text-[10px] font-mono text-slate-500">+{{(demo.techBadges || []).length - 3}}</span>
+                  }
+                </div>
+                <div class="mt-1 flex items-center justify-between text-[10px] font-mono text-slate-500">
+                  <span>{{demo.commitStreak}} day streak</span>
+                  <mat-icon class="text-[14px] h-[14px] w-[14px] text-slate-600 transition-colors group-hover:text-lime-300">arrow_forward</mat-icon>
+                </div>
+              </button>
             }
           </div>
         </section>
@@ -512,6 +577,10 @@ export class LandingComponent implements OnInit, OnDestroy {
     if (this.username().trim()) {
       this.connect.emit(this.username().trim());
     }
+  }
+
+  selectDemo(state: PetState) {
+    this.demo.emit(state);
   }
 
   usePresetUsername(username: string) {

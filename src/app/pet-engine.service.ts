@@ -11,6 +11,15 @@ import {
 // Shared level divisor — used by both scoring paths so level is consistent regardless of data source
 const SHARED_LEVEL_DIVISOR = 25;
 
+// Recency decay half-life in days. A push N half-lives ago contributes 1/(2^N) of its base value.
+const RECENCY_HALF_LIFE_DAYS = 30;
+
+// 90-day cap for "recent" weighting on push events. Older events still count but recency-fade applies.
+const RECENT_PUSH_WINDOW_DAYS = 90;
+
+// Max pushes the recency curve counts (the rest are ignored). Prevents huge repos from overshooting the curve.
+const RECENT_PUSH_CAP = 300;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -39,7 +48,7 @@ export class PetEngineService {
       evolutionMilestone: null,
     };
   }
-  
+
   calculateState(events: GitHubEvent[], repos: GitHubRepository[] = []): PetState {
     const defaultState = this.createDefaultState();
 
@@ -52,12 +61,12 @@ export class PetEngineService {
     }
 
     const pushEvents = events.filter(e => e.type === 'PushEvent');
-    
+
     // Calculate total pushes
     const totalPushes = pushEvents.length;
-    
+
     // Sort events by date descending
-    const sortedPushes = [...pushEvents].sort((a, b) => 
+    const sortedPushes = [...pushEvents].sort((a, b) =>
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
 
@@ -68,7 +77,7 @@ export class PetEngineService {
       const now = new Date();
       const diffTime = Math.abs(now.getTime() - lastPushDate.getTime());
       daysSinceLast = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      
+
       const payload = sortedPushes[0].payload;
       if (payload && Array.isArray(payload['commits']) && payload['commits'].length > 0) {
         lastCommitMessage = (payload['commits'][0] as Record<string, unknown>)['message'] as string;
@@ -115,8 +124,9 @@ export class PetEngineService {
     streak = currentStreak;
 
     // Determine XP / Level
-    // rough estimate: 1 push = 10 XP, formula Lvl = Math.floor(sqrt(XP / 10)) + 1
-    const pushXp = totalPushes * 15;
+    // Recency-weighted push XP: each push decays exponentially with age.
+    // A push today = 10 XP; a push 30 days old = 5 XP; 60 days = 2.5 XP.
+    const pushXp = this.calculateRecencyWeightedXp(pushEvents);
     const streakXp = streak * 50;
     const techBadges = this.calculateTechBadges(repos);
     const badgeXp = techBadges.reduce((sum, badge) => sum + badge.level * 25, 0);
@@ -127,10 +137,10 @@ export class PetEngineService {
     const xpToNextLevel = Math.pow(level, 2) * SHARED_LEVEL_DIVISOR;
 
     // Determine Health
-    // Health degrades by 10 per day without commits
+    // Health degrades by 15 per day without commits, recovers to 100 on same-day activity
     let health = Math.max(0, 100 - (daysSinceLast * 15));
     if (daysSinceLast === 0) health = 100;
-    
+
     // Stage
     let stage: PetState['stage'] = 'Egg';
     if (level >= 10) stage = 'Elder';
@@ -138,7 +148,7 @@ export class PetEngineService {
     else if (level >= 3) stage = 'Teen';
     else if (level >= 2) stage = 'Baby';
 
-    // Mood
+    // Mood — order matters: Neglected > Dead > Sad > Ecstatic > Happy > Neutral
     let mood: PetState['mood'] = 'Neutral';
     if (careState === 'Neglected') mood = 'Sad';
     else if (health === 0) mood = 'Dead';
@@ -165,7 +175,7 @@ export class PetEngineService {
       activitySource: 'Recent public GitHub events',
       techBadges,
       scoreBreakdown: [
-        { label: 'Recent pushes', value: pushXp },
+        { label: 'Recency-weighted pushes', value: pushXp },
         { label: 'Active streak', value: streakXp },
         { label: 'Tech badges', value: badgeXp },
         { label: 'Freshness', value: freshnessXp },
@@ -211,7 +221,8 @@ export class PetEngineService {
       dateWalker.setDate(dateWalker.getDate() - 1);
     }
 
-    const contributionXp = summary.totalContributions * 10;
+    // Recency-weighted XP: each contribution day decays by half-life
+    const contributionXp = this.calculateRecencyWeightedContributions(summary.contributionDays);
     const commitXp = summary.totalCommitContributions * 5;
     const streakXp = streak * 50;
     const techBadges = this.calculateTechBadges(repos);
@@ -257,13 +268,54 @@ export class PetEngineService {
       activitySource: 'Read-only GitHub contribution graph',
       techBadges,
       scoreBreakdown: [
-        { label: 'Yearly contributions', value: contributionXp },
+        { label: 'Recency-weighted contributions', value: contributionXp },
         { label: 'Commit contributions', value: commitXp },
         { label: 'Active streak', value: streakXp },
         { label: 'Tech badges', value: badgeXp },
         { label: 'Freshness', value: freshnessXp },
       ],
     });
+  }
+
+  /**
+   * Recency-weighted XP for push events. Each push contributes 10 XP today, decaying
+   * exponentially with a 30-day half-life. Stops contributing meaningfully after ~6 months.
+   * Capped at RECENT_PUSH_CAP pushes to prevent huge repos from saturating the curve.
+   */
+  private calculateRecencyWeightedXp(pushEvents: GitHubEvent[]): number {
+    const now = Date.now();
+    const sorted = [...pushEvents]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, RECENT_PUSH_CAP);
+
+    let total = 0;
+    for (const push of sorted) {
+      const ageDays = (now - new Date(push.created_at).getTime()) / (1000 * 60 * 60 * 24);
+      if (ageDays > RECENT_PUSH_WINDOW_DAYS * 2) {
+        // Older than 6 months: very small contribution, but still counted to avoid abrupt cliff
+        total += 0.5;
+        continue;
+      }
+      const decayFactor = Math.pow(0.5, ageDays / RECENCY_HALF_LIFE_DAYS);
+      total += 10 * decayFactor;
+    }
+    return Math.round(total);
+  }
+
+  /**
+   * Recency-weighted XP for the contribution graph. Same half-life as pushes,
+   * but each active day contributes (count * 2) XP at decay 0, scaled down by age.
+   */
+  private calculateRecencyWeightedContributions(days: { date: string; contributionCount: number }[]): number {
+    const now = Date.now();
+    let total = 0;
+    for (const day of days) {
+      const ageDays = (now - new Date(`${day.date}T00:00:00`).getTime()) / (1000 * 60 * 60 * 24);
+      if (ageDays < 0) continue;
+      const decayFactor = Math.pow(0.5, ageDays / RECENCY_HALF_LIFE_DAYS);
+      total += day.contributionCount * 2 * decayFactor;
+    }
+    return Math.round(total);
   }
 
   enrichState(
@@ -298,11 +350,11 @@ export class PetEngineService {
     const ecosystemMap = this.getEcosystemMap();
 
     // Group techs by ecosystem
-    type EcosystemGroup = {
+    interface EcosystemGroup {
       repos: Set<string>;
       techs: Set<string>;
       lastUpdated?: Date;
-    };
+    }
     const ecosystemGroups = new Map<string, EcosystemGroup>();
 
     for (const repo of repos) {
@@ -462,6 +514,11 @@ export class PetEngineService {
   private calculateAchievements(state: PetState): AchievementBadge[] {
     const achievements: AchievementBadge[] = [];
     const topBadgeLevel = Math.max(0, ...state.techBadges.map((badge) => badge.level));
+    const distinctEcosystems = new Set(
+      state.techBadges
+        .map((badge) => this.getEcosystemForTech(badge.tech))
+        .filter((ecosystem) => ecosystem && ecosystem !== 'Other')
+    ).size;
 
     if (state.recentCommitsCount > 0) {
       achievements.push({
@@ -493,6 +550,12 @@ export class PetEngineService {
         description: `${state.commitStreak} active days in sequence.`,
         icon: 'local_fire_department',
       });
+    } else if (state.commitStreak >= 3) {
+      achievements.push({
+        name: 'Warming Up',
+        description: `${state.commitStreak}-day streak building. Don't stop now.`,
+        icon: 'local_fire_department',
+      });
     }
 
     if (state.techBadges.length >= 4) {
@@ -500,6 +563,14 @@ export class PetEngineService {
         name: 'Polyglot',
         description: `${state.techBadges.length} active tech lanes detected.`,
         icon: 'hub',
+      });
+    }
+
+    if (distinctEcosystems >= 3) {
+      achievements.push({
+        name: 'Cross-Stack Wanderer',
+        description: `${distinctEcosystems} distinct ecosystems represented. Jack of all trades.`,
+        icon: 'all_inclusive',
       });
     }
 
@@ -511,6 +582,14 @@ export class PetEngineService {
       });
     }
 
+    if (topBadgeLevel >= 5) {
+      achievements.push({
+        name: 'Legend',
+        description: 'Topped out a tech badge. The cabinet is full. The cabinet is satisfied.',
+        icon: 'auto_awesome',
+      });
+    }
+
     if (state.level >= 10) {
       achievements.push({
         name: 'Elder Maintainer',
@@ -519,21 +598,97 @@ export class PetEngineService {
       });
     }
 
-    return achievements.slice(0, 5);
+    if (state.mood === 'Ecstatic') {
+      achievements.push({
+        name: 'On Fire',
+        description: 'Recent enough, healthy enough, streak long enough — peak pet state.',
+        icon: 'whatshot',
+      });
+    }
+
+    if (state.privateContributionsCount && state.privateContributionsCount > 0) {
+      achievements.push({
+        name: 'Hidden Engine',
+        description: `${state.privateContributionsCount} private or org contribution(s) on the graph.`,
+        icon: 'visibility_off',
+      });
+    }
+
+    return achievements.slice(0, 6);
+  }
+
+  private getEcosystemForTech(tech: string): string | null {
+    const map = this.getEcosystemMap();
+    if (map[tech]) return map[tech];
+    // Direct ecosystem (representative tech names)
+    const directEcosystems: Record<string, string> = {
+      JavaScript: 'JS/TS', TypeScript: 'JS/TS',
+      Python: 'Python', Rust: 'Rust', Go: 'Go',
+      Java: 'Java', Ruby: 'Ruby', PHP: 'PHP',
+      Swift: 'Swift', Kotlin: 'Kotlin', 'C#': 'C#',
+      'C++': 'C/C++',
+    };
+    return directEcosystems[tech] ?? null;
   }
 
   private getPersonalityLine(state: PetState): string {
-    if (state.careState === 'Neglected') return 'Neglected. No recent push signal, and the pet has noticed.';
-    if (state.careState === 'Resting') return 'Resting. Not abandoned, but definitely eyeing the commit log.';
-    if (state.careState === 'Thriving') return 'Freshly fed by recent activity. The pet is dangerously smug.';
-    if (state.health === 0) return 'The pet is not angry. Just disappointed. Terminally.';
-    if (state.level >= 10) return 'Ancient commit energy detected. Slightly terrifying, mostly useful.';
-    if (state.commitStreak >= 7) return 'A proper streak. The pet has stopped drafting resignation letters.';
-    if (state.techBadges.some((badge) => badge.level >= 4)) return 'Specialist detected. The badge cabinet is no longer decorative.';
-    if (state.techBadges.length >= 4) return 'Polyglot behavior confirmed. Chaotic, but marketable.';
-    if (state.daysSinceLastCommit > 14) return 'The repository garden appears to need watering.';
-    if (state.mood === 'Ecstatic') return 'Suspiciously productive. Continue before someone schedules a meeting.';
-    if (state.mood === 'Happy') return 'Healthy commit pulse. The pet approves, quietly.';
+    // Care-state lines take priority
+    if (state.careState === 'Neglected') {
+      const neglectedLines = [
+        'Neglected. No recent push signal, and the pet has noticed.',
+        'The commit mines have gone quiet. The pet is filing a complaint.',
+        'Days since last signal: too many. The pet has started passive-aggressively re-organizing its toys.',
+      ];
+      return neglectedLines[state.daysSinceLastCommit % neglectedLines.length];
+    }
+    if (state.careState === 'Resting') {
+      const restingLines = [
+        'Resting. Not abandoned, but definitely eyeing the commit log.',
+        'Quiet for a few days. The pet is conserving dramatic energy.',
+        'The pet is between adventures. Try not to read into it.',
+      ];
+      return restingLines[state.daysSinceLastCommit % restingLines.length];
+    }
+    if (state.careState === 'Thriving') {
+      const thrivingLines = [
+        'Freshly fed by recent activity. The pet is dangerously smug.',
+        'Activity today. The pet has begun narrating its own documentary.',
+        'Committed today. The pet is at peak insufferability.',
+      ];
+      return thrivingLines[Math.floor(Math.random() * thrivingLines.length)];
+    }
+    if (state.health === 0) {
+      return 'The pet is not angry. Just disappointed. Terminally.';
+    }
+    if (state.level >= 10) {
+      const elderLines = [
+        'Ancient commit energy detected. Slightly terrifying, mostly useful.',
+        'Elder tier unlocked. The pet has opinions about monorepos.',
+        'A creature of lore. Pet the beard respectfully.',
+      ];
+      return elderLines[state.commitStreak % elderLines.length];
+    }
+    if (state.commitStreak >= 7) {
+      return 'A proper streak. The pet has stopped drafting resignation letters.';
+    }
+    if (state.techBadges.some((badge) => badge.level === 5)) {
+      return 'Legend-tier badge secured. The pet now demands the corner office.';
+    }
+    if (state.techBadges.some((badge) => badge.level >= 4)) {
+      return 'Specialist detected. The badge cabinet is no longer decorative.';
+    }
+    if (state.techBadges.length >= 4) {
+      return 'Polyglot behavior confirmed. Chaotic, but marketable.';
+    }
+    if (state.mood === 'Ecstatic') {
+      return 'Suspiciously productive. Continue before someone schedules a meeting.';
+    }
+    if (state.mood === 'Happy') {
+      return 'Healthy commit pulse. The pet approves, quietly.';
+    }
+    if (state.mood === 'Sad' && state.health < 40) {
+      return 'Vitals are sliding. The pet is reconsidering its loyalty contract.';
+    }
     return 'Stable, but not exactly setting the leaderboard on fire.';
   }
 
