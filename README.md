@@ -38,7 +38,7 @@ VibeGotchi turns GitHub activity into XP, health, mood, streaks, achievement bad
 
 | Resource | Link |
 | --- | --- |
-| Production app | https://vibegotchi.pages.dev |
+| Web app | https://vibegotchi.pages.dev |
 | GitHub repository | https://github.com/PascalAI2024/VibeGotchi |
 | Static demo | https://pascalai2024.github.io/VibeGotchi/ |
 | Docs index | [docs/README.md](docs/README.md) |
