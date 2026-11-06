@@ -1,8 +1,12 @@
 # VibeGotchi
 
-<p align="center">
-  <img src="public/vibegotchi-banner.jpeg" alt="VibeGotchi branded virtual pet poster" width="960">
-</p>
+<table align="center">
+  <tr>
+    <td valign="top"><img src="docs/assets/screenshots/app-dashboard-desktop.png" alt="VibeGotchi dashboard for the Demo Coder profile at level 12 Elder, with streak, vitality, tech badges and the evolved pet" width="640"></td>
+    <td valign="top"><img src="docs/assets/screenshots/app-dashboard-mobile.png" alt="The same dashboard at 390 px wide" width="240"></td>
+  </tr>
+</table>
+<p align="center"><sub>The deployed app at vibegotchi.pages.dev showing the built-in Demo Coder profile, captured 2026-11-05 at 1440 px and 390 px.</sub></p>
 
 **A GitHub-powered virtual pet that evolves from coding activity.**
 
@@ -141,6 +145,8 @@ Prerequisites:
 npm install
 npm run dev
 ```
+
+Checked on 2026-11-05 with a clean `npm ci`: `npm run dev` served the app on port 3000, and `npm run lint`, `npm run typecheck:functions` and `CF_PAGES=1 npm run build:pages` passed. Demo profiles work without GitHub credentials; login-based scoring needs the OAuth setup in [docs/deployment.md](docs/deployment.md).
 
 Open:
 
